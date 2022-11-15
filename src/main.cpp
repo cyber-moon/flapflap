@@ -1,6 +1,7 @@
 /*********
-  Rui Santos
-  Complete project details at https://RandomNerdTutorials.com/vs-code-platformio-ide-esp32-esp8266-arduino/
+  Stephan Zehnder
+  15.11.2022
+  Controlling an Omega 3021 Flipflap-Display
 *********/
 
 #include <Arduino.h>
