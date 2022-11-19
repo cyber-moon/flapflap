@@ -1,11 +1,14 @@
 /*********
-  Rui Santos
-  Complete project details at https://RandomNerdTutorials.com/vs-code-platformio-ide-esp32-esp8266-arduino/
+  Stephan Zehnder
+  15.11.2022
+  Controlling an Omega 3021 Flipflap-Display
 *********/
 
 #include <Arduino.h>
 #include <string>
 #include <iostream>
+#include <chrono>
+#include <unistd.h>
 using namespace std;
 
 #define START 22
@@ -56,7 +59,6 @@ void deselectAllModules() {
   }
 }
 
-
 void setup() {
   Serial.begin(115200);
   pinMode(START, OUTPUT);
@@ -73,10 +75,11 @@ void setup() {
   pinMode(DATA_4, INPUT);
   pinMode(DATA_5, INPUT);
 
-  digitalWrite(START, LOW);
+  // Start all modules and then de-select them
+  selectAllModules();
+  digitalWrite(START, HIGH);
+  deselectAllModules();
 }
-
-
 
 string getCurrentPosition() {
   string binaryCode = "";
@@ -138,7 +141,7 @@ char getPrecedingCharacter(char myChar) {
 
 
 void loop() {
-  string draft[] = {"efgh"};
+  string draft[] = {"ijkl"};
   int numOfRows = size(draft);
   string *text = createText(draft, numOfRows);
 
@@ -186,5 +189,8 @@ void loop() {
       }
     } 
   }
-
 }
+
+//   chrono::steady_clock::time_point begin = chrono::steady_clock::now();
+//   chrono::steady_clock::time_point end = chrono::steady_clock::now();
+//   cout << endl << "  Waited for valid position for " << chrono::duration_cast<chrono::microseconds>(end - begin).count() << "[µs]" << endl;
