@@ -9,15 +9,6 @@
 using namespace std;
 
 #define START 22
-#define ADL_1 25
-#define ADL_2 26
-#define ADL_3 27
-#define ADL_4 4
-#define ADC_A 21
-#define ADC_B 19
-#define ADC_C 18
-#define ADC_D 17
-#define ADC_E 16
 #define DATA_0 32
 #define DATA_1 33
 #define DATA_2 34
@@ -25,31 +16,56 @@ using namespace std;
 #define DATA_4 36
 #define DATA_5 39
 
+int ADL[] = {25, 26, 27, 4};
+int ADC[] = {21, 19, 18, 17, 16};
+
+// l: 1, 2, 3 or 4
+// val: HIGH or LOW
+void setADL(int l, uint8_t val) {
+  digitalWrite(ADL[l-1], val);
+}
+
+// c: Column-number ([0-n])
+void selectADC(int c) {
+  digitalWrite(ADC[4], (c/16 == 1));
+  c = c%16;
+  digitalWrite(ADC[3], (c/8 == 0));
+  c = c%8;
+  digitalWrite(ADC[2], (c/4 == 0));
+  c = c%4;
+  digitalWrite(ADC[1], (c/2 == 0));
+  c = c%2;
+  digitalWrite(ADC[0], (c/1 == 0));
+}
+
+void selectAllModules() {
+  for (int i=0; i<=3; i++) {
+    digitalWrite(ADL[i], HIGH);
+  }
+  for (int i=0; i<=4; i++) {
+    digitalWrite(ADC[i], HIGH);
+  }
+}
+
 void deselectAllModules() {
-  digitalWrite(ADL_1, LOW);
-  digitalWrite(ADL_2, LOW);
-  digitalWrite(ADL_3, LOW);
-  digitalWrite(ADL_4, LOW);
-  digitalWrite(ADC_A, LOW);
-  digitalWrite(ADC_B, LOW);
-  digitalWrite(ADC_C, LOW);
-  digitalWrite(ADC_D, LOW);
-  digitalWrite(ADC_E, LOW);
+  for (int i=0; i<=3; i++) {
+    digitalWrite(ADL[i], LOW);
+  }
+  for (int i=0; i<=4; i++) {
+    digitalWrite(ADC[i], LOW);
+  }
 }
 
 
 void setup() {
   Serial.begin(115200);
-  pinMode(ADL_1, OUTPUT);
-  pinMode(ADL_2, OUTPUT);
-  pinMode(ADL_3, OUTPUT);
-  pinMode(ADL_4, OUTPUT);
-  pinMode(ADC_A, OUTPUT);
-  pinMode(ADC_B, OUTPUT);
-  pinMode(ADC_C, OUTPUT);
-  pinMode(ADC_D, OUTPUT);
-  pinMode(ADC_E, OUTPUT);
   pinMode(START, OUTPUT);
+  for (int i=0; i<=3; i++) {
+    pinMode(ADL[i], OUTPUT);
+  }
+  for (int i=0; i<=4; i++) {
+    pinMode(ADC[i], OUTPUT);
+  }
   pinMode(DATA_0, INPUT);
   pinMode(DATA_1, INPUT);
   pinMode(DATA_2, INPUT);
@@ -75,56 +91,100 @@ string getCurrentPosition() {
 
 char getCurrentChar() {
   string binaryCode = getCurrentPosition();
-  int ascii = 64 + (binaryCode[5-0]-'0')*1 + (binaryCode[5-1]-'0')*2 + (binaryCode[5-2]-'0')*4 + (binaryCode[5-3]-'0')*8 + (binaryCode[5-4]-'0')*16 + (binaryCode[5-5]-'0')*32;
-
-  return char(ascii);
+  if (binaryCode == "000000") {
+    return '+'; // just return some non-existent value
+  } 
+  int intCode = (binaryCode[5-0]-'0')*1 + (binaryCode[5-1]-'0')*2 + (binaryCode[5-2]-'0')*4 + (binaryCode[5-3]-'0')*8 + (binaryCode[5-4]-'0')*16 + (binaryCode[5-5]-'0')*32;
+  if (intCode >= 1 && intCode <= 26) {
+    return char(64 + intCode);
+  } else if (intCode >= 45 && intCode <= 57) {
+    return char(intCode);
+  } else if (intCode == 32) {
+    return ' ';
+  } else if (intCode == 39) {
+    return '/';
+  }
+  return '+';
 }
 
-void loop() {
-  string display = "BIGNA";
+int numOfCols = 4;
 
-  for (int i=0; i<display.size(); ) {
-    deselectAllModules();
-    
-    // Select Module 1
-    digitalWrite(START, LOW);
-    delay(1);
-    digitalWrite(ADL_2, HIGH);
-    digitalWrite(ADL_1, HIGH);
-
-    // Serial.print("Selected!\n");
-    if(!(getCurrentPosition() == "000000")) {
-      delay(1);
-
-      cout << getCurrentChar() << endl;
-      
-      if(getCurrentChar() == display[i]) {
-        digitalWrite(START, LOW);
-        Serial.print("Position found!\n");
-        i++;
-        delay(500);
-      } else
-      {
-        digitalWrite(START, HIGH);
-        Serial.print("still searching...\n");
-      }
-    } else 
-    {
-        digitalWrite(START, HIGH);
+string* createText(string* text, int numOfRows) {
+  for (int i=0; i<numOfRows; i++) {
+    string line = text[i];
+    for (int j=0; j<size(line); j++) {
+      line[j] = toupper(line[j]);
     }
-    
-    digitalWrite(ADL_1, LOW);
-    delay(1);
-    digitalWrite(ADL_2, LOW);
+    if (size(line) < numOfCols) {
+      int missingSpaces = numOfCols - size(line);
+      char spaces[missingSpaces];
+      fill_n(spaces, missingSpaces, ' ');
+      line = line.append(spaces);
+    }
+    text[i] = line;
+  }
+  return text;
+}
+
+char getPrecedingCharacter(char myChar) {
+  char characters[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','V','O','P','Q','R','S','T','U','V','W','X','Y','Z','/','-','1','2','3','4','5','6','7','8','9','0','.',' '};
+  char* position = find(characters, characters+size(characters), myChar);
+  char precedingChar = *(position-1);
+  if (position == characters) {
+    precedingChar = ' ';
+  }
+  return precedingChar;
+}
 
 
+void loop() {
+  string draft[] = {"efgh"};
+  int numOfRows = size(draft);
+  string *text = createText(draft, numOfRows);
 
-    digitalWrite(ADC_E, LOW);
-    digitalWrite(ADC_D, LOW);
-    digitalWrite(ADC_C, LOW);
-    digitalWrite(ADC_B, LOW);
-    digitalWrite(ADC_A, HIGH);
+  char lastOutputChar[numOfRows * numOfCols];
+  bool isCorrect[numOfRows * numOfCols];
+  for (int i=0; i<numOfRows * numOfCols; i++) {
+    isCorrect[i] = false;
+  }
 
+  // Iterate through the Matrix (Row-wise)
+  while(1) {
+    for (int i=0; i<numOfRows; i++) {
+      string line = text[i];
+      for (int j=0; j<numOfCols; j++) {
+        // if (!isCorrect[2*i + j]) {
+          char myChar = line[j];
+          char precedingChar = getPrecedingCharacter(myChar);
+
+          // Try to stop the motor
+          digitalWrite(START, LOW);
+          usleep(5);
+          selectADC(j);
+          setADL(i+1, HIGH);
+
+          // if a valid character was detected
+          char currentChar = getCurrentChar();
+          // if(currentChar == myChar && lastOutputChar[2*i + j] == precedingChar) {
+          if(currentChar == myChar) {
+            digitalWrite(START, LOW);
+            isCorrect[2*i + j] = true;
+          } else {
+            digitalWrite(START, HIGH);
+          }
+          if (currentChar != '+') {
+            if (currentChar != lastOutputChar[2*i + j]) {
+              cout << "Row: " << i << " Col: " << j << " Should: " << myChar << " Is: " << currentChar << endl;
+              lastOutputChar[2*i + j] = currentChar;
+            }
+          }
+
+          // Un-select the module, so it continues turning (if character was not found)
+          usleep(5);
+          setADL(i+1, LOW);
+        // }
+      }
+    } 
   }
 
 }
