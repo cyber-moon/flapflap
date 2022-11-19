@@ -27,8 +27,8 @@ int ADC[] = {21, 19, 18, 17, 16};
 
 string draft = "abcd";
 
-int numOfCols = 4;
-int numOfRows = 1;
+int numOfRows = 2;
+int numOfCols = 2;
 
 // Set up Webserver
 AsyncWebServer server(80);
@@ -115,9 +115,10 @@ void deselectAllModules() {
   for (int i=0; i<=3; i++) {
     digitalWrite(ADL[i], LOW);
   }
-  for (int i=0; i<=4; i++) {
+  for (int i=0; i<=3; i++) {
     digitalWrite(ADC[i], LOW);
   }
+  digitalWrite(ADC[4], HIGH);
 }
 
 void setup() {
@@ -217,7 +218,7 @@ void loop() {
     for (int i=0; i<numOfRows; i++) {
       string line = text.substr(i*numOfCols, (i+1)*numOfCols);
       for (int j=0; j<numOfCols; j++) {
-        // if (!isCorrect[numOfRows*i + j]) {
+        if (!isCorrect[numOfRows*i + j]) {
           char myChar = line[j];
           char precedingChar = getPrecedingCharacter(myChar);
 
@@ -232,10 +233,7 @@ void loop() {
           if(currentChar == myChar && lastOutputChars[numOfRows*i + j].find(precedingChar)) {
           // if(currentChar == myChar) {
             digitalWrite(START, LOW);
-            usleep(5);
-            if (currentChar == myChar) {
-              isCorrect[numOfRows*i + j] = true;
-            }
+            isCorrect[numOfRows*i + j] = true;
           } else {
             digitalWrite(START, HIGH);
           }
@@ -254,7 +252,8 @@ void loop() {
           // Un-select the module, so it continues turning (if character was not found)
           usleep(5);
           setADL(i+1, LOW);
-        // }
+          selectADC(31);
+        }
       }
     } 
   }
