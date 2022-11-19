@@ -25,6 +25,13 @@ using namespace std;
 int ADL[] = {25, 26, 27, 4};
 int ADC[] = {21, 19, 18, 17, 16};
 
+string draft[] = {"mnlo"};
+
+void updateText(string text) {
+  *draft = {text};
+}
+
+
 // Set up Webserver
 AsyncWebServer server(80);
 const char* ssid = "zimtbaum";
@@ -69,6 +76,9 @@ void setupWebserver() {
     // GET input1 value on <ESP_IP>/get?input1=<inputMessage>
     inputMessage = request->getParam("input1")->value();
 
+    updateText(inputMessage.c_str());
+
+
     Serial.println(inputMessage);
     request->send(200, "text/html", "HTTP GET request sent to your ESP with value: " + inputMessage +
                                      "<br><a href=\"/\">Return to Home Page</a>");
@@ -76,7 +86,6 @@ void setupWebserver() {
   server.onNotFound(notFound);
   server.begin();
 }
-
 
 
 
@@ -121,7 +130,7 @@ void deselectAllModules() {
 void setup() {
   Serial.begin(115200);
   setupWebserver();
-  
+
   pinMode(START, OUTPUT);
   for (int i=0; i<=3; i++) {
     pinMode(ADL[i], OUTPUT);
@@ -202,9 +211,7 @@ char getPrecedingCharacter(char myChar) {
 
 
 void loop() {
-  string draft[] = {"mnlo"};
   int numOfRows = size(draft);
-  string *text = createText(draft, numOfRows);
 
   char lastOutputChar[numOfRows * numOfCols];
   bool isCorrect[numOfRows * numOfCols];
@@ -214,6 +221,7 @@ void loop() {
 
   // Iterate through the Matrix (Row-wise)
   while(1) {
+    string *text = createText(draft, numOfRows);
     for (int i=0; i<numOfRows; i++) {
       string line = text[i];
       for (int j=0; j<numOfCols; j++) {
