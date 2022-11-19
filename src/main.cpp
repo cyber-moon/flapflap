@@ -24,6 +24,7 @@ using namespace std;
 
 int ADL[] = {25, 26, 27, 4};
 int ADC[] = {21, 19, 18, 17, 16};
+char supportedCharacters[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','V','O','P','Q','R','S','T','U','V','W','X','Y','Z','/','-','1','2','3','4','5','6','7','8','9','0','.',' '};
 
 string draft = "abcd";
 
@@ -42,8 +43,8 @@ const char index_html[] PROGMEM = R"rawliteral(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   </head><body>
   <form action="/get">
-    input1: <input type="text" name="input1">
-    <input type="submit" value="Submit">
+    input: <input type="text" name="input">
+    <input type="submit" value="Flapflap">
   </form><br>
 </body></html>)rawliteral";
 
@@ -68,13 +69,12 @@ void setupWebserver() {
     request->send_P(200, "text/html", index_html);
   });
 
-  // Send a GET request to <ESP_IP>/get?input1=<inputMessage>
+  // Send a GET request to <ESP_IP>/get?input=<inputMessage>
   server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    // GET input1 value on <ESP_IP>/get?input1=<inputMessage>
-    String inputMessage = request->getParam("input1")->value();
+    // GET input value on <ESP_IP>/get?input=<inputMessage>
+    String inputMessage = request->getParam("input")->value();
     draft = inputMessage.c_str();
-    request->send(200, "text/html", "HTTP GET request sent to your ESP with value: " + inputMessage +
-                                     "<br><a href=\"/\">Return to Home Page</a>");
+    request->send(200, "text/html", index_html);
   });
   server.onNotFound(notFound);
   server.begin();
@@ -177,6 +177,11 @@ char getCurrentChar() {
 string reviseText(string text) {
   for (int j=0; j<size(text); j++) {
     text[j] = toupper(text[j]);
+    if (find(supportedCharacters, supportedCharacters+size(supportedCharacters), text[j]) == (supportedCharacters+size(supportedCharacters))) {
+      cout << "Unsupported character: " << text[j] << endl;
+      text[j] = '/';
+    }
+
   }
   if (size(text) < numOfCols*numOfRows) {
     int missingSpaces = numOfCols*numOfRows - size(text);
@@ -188,10 +193,9 @@ string reviseText(string text) {
 }
 
 char getPrecedingCharacter(char myChar) {
-  char characters[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','V','O','P','Q','R','S','T','U','V','W','X','Y','Z','/','-','1','2','3','4','5','6','7','8','9','0','.',' '};
-  char* position = find(characters, characters+size(characters), myChar);
+  char* position = find(supportedCharacters, supportedCharacters+size(supportedCharacters), myChar);
   char precedingChar = *(position-1);
-  if (position == characters) {
+  if (position == supportedCharacters) {
     precedingChar = ' ';
   }
   return precedingChar;
