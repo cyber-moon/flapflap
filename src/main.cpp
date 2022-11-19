@@ -25,12 +25,10 @@ using namespace std;
 int ADL[] = {25, 26, 27, 4};
 int ADC[] = {21, 19, 18, 17, 16};
 
-string draft[] = {"mnlo"};
+string draft = "abcd";
 
-void updateText(string text) {
-  *draft = {text};
-}
-
+int numOfCols = 4;
+int numOfRows = 1;
 
 // Set up Webserver
 AsyncWebServer server(80);
@@ -72,14 +70,9 @@ void setupWebserver() {
 
   // Send a GET request to <ESP_IP>/get?input1=<inputMessage>
   server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    String inputMessage;
     // GET input1 value on <ESP_IP>/get?input1=<inputMessage>
-    inputMessage = request->getParam("input1")->value();
-
-    updateText(inputMessage.c_str());
-
-
-    Serial.println(inputMessage);
+    String inputMessage = request->getParam("input1")->value();
+    draft = inputMessage.c_str();
     request->send(200, "text/html", "HTTP GET request sent to your ESP with value: " + inputMessage +
                                      "<br><a href=\"/\">Return to Home Page</a>");
   });
@@ -180,21 +173,15 @@ char getCurrentChar() {
   return '+';
 }
 
-int numOfCols = 4;
-
-string* createText(string* text, int numOfRows) {
-  for (int i=0; i<numOfRows; i++) {
-    string line = text[i];
-    for (int j=0; j<size(line); j++) {
-      line[j] = toupper(line[j]);
-    }
-    if (size(line) < numOfCols) {
-      int missingSpaces = numOfCols - size(line);
-      char spaces[missingSpaces];
-      fill_n(spaces, missingSpaces, ' ');
-      line = line.append(spaces);
-    }
-    text[i] = line;
+string reviseText(string text) {
+  for (int j=0; j<size(text); j++) {
+    text[j] = toupper(text[j]);
+  }
+  if (size(text) < numOfCols*numOfRows) {
+    int missingSpaces = numOfCols*numOfRows - size(text);
+    char spaces[missingSpaces];
+    fill_n(spaces, missingSpaces, ' ');
+    text = text.append(spaces);
   }
   return text;
 }
@@ -211,21 +198,26 @@ char getPrecedingCharacter(char myChar) {
 
 
 void loop() {
-  int numOfRows = size(draft);
-
-  char lastOutputChar[numOfRows * numOfCols];
+  string oldDraft = "";
+  string text = "";
+  string lastOutputChars[numOfRows * numOfCols];
   bool isCorrect[numOfRows * numOfCols];
-  for (int i=0; i<numOfRows * numOfCols; i++) {
-    isCorrect[i] = false;
-  }
 
   // Iterate through the Matrix (Row-wise)
   while(1) {
-    string *text = createText(draft, numOfRows);
+    if (oldDraft != draft) {
+      text = reviseText(draft);
+      oldDraft = draft;
+      for (int i=0; i<numOfRows * numOfCols; i++) {
+        lastOutputChars[i] = "";
+        isCorrect[i] = false;
+      }
+    }
+
     for (int i=0; i<numOfRows; i++) {
-      string line = text[i];
+      string line = text.substr(i*numOfCols, (i+1)*numOfCols);
       for (int j=0; j<numOfCols; j++) {
-        // if (!isCorrect[2*i + j]) {
+        // if (!isCorrect[numOfRows*i + j]) {
           char myChar = line[j];
           char precedingChar = getPrecedingCharacter(myChar);
 
@@ -235,19 +227,27 @@ void loop() {
           selectADC(j);
           setADL(i+1, HIGH);
 
-          // if a valid character was detected
+          // Stop if myChar is found
           char currentChar = getCurrentChar();
-          // if(currentChar == myChar && lastOutputChar[2*i + j] == precedingChar) {
-          if(currentChar == myChar) {
+          if(currentChar == myChar && lastOutputChars[numOfRows*i + j].find(precedingChar)) {
+          // if(currentChar == myChar) {
             digitalWrite(START, LOW);
-            isCorrect[2*i + j] = true;
+            usleep(5);
+            if (currentChar == myChar) {
+              isCorrect[numOfRows*i + j] = true;
+            }
           } else {
             digitalWrite(START, HIGH);
           }
+
+          // Store last few Outputs of selected module
           if (currentChar != '+') {
-            if (currentChar != lastOutputChar[2*i + j]) {
-              cout << "Row: " << i << " Col: " << j << " Should: " << myChar << " Is: " << currentChar << endl;
-              lastOutputChar[2*i + j] = currentChar;
+            if (lastOutputChars[numOfRows*i + j].find(currentChar) == string::npos) {
+              lastOutputChars[numOfRows*i + j].push_back(currentChar);
+              cout << "Row: " << i << " Col: " << j << " Should: " << myChar << " Is: " << currentChar << " Last: " << lastOutputChars[numOfRows*i + j] << " NumOfLast: " << size(lastOutputChars[numOfRows*i+j]) << endl;
+              if (size(lastOutputChars[numOfRows*i + j]) > 4) {
+                lastOutputChars[numOfRows*i + j] = lastOutputChars[numOfRows*i + j].substr(1, 5);
+              }
             }
           }
 
