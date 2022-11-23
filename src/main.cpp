@@ -26,10 +26,10 @@ int ADL[] = {25, 26, 27, 4};
 int ADC[] = {21, 19, 18, 17, 16};
 char supportedCharacters[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','V','O','P','Q','R','S','T','U','V','W','X','Y','Z','/','-','1','2','3','4','5','6','7','8','9','0','.',' '};
 
-string draft = "abcd";
+string draft = "abcdefghij";
 
 int numOfRows = 2;
-int numOfCols = 2;
+int numOfCols = 5;
 
 // Set up Webserver
 AsyncWebServer server(80);
@@ -206,7 +206,8 @@ void loop() {
   string oldDraft = "";
   string text = "";
   string lastOutputChars[numOfRows * numOfCols];
-  bool isCorrect[numOfRows * numOfCols];
+  // bool isCorrect[numOfRows * numOfCols];
+  int isCorrect[numOfRows * numOfCols];
 
   // Iterate through the Matrix (Row-wise)
   while(1) {
@@ -215,14 +216,16 @@ void loop() {
       oldDraft = draft;
       for (int i=0; i<numOfRows * numOfCols; i++) {
         lastOutputChars[i] = "";
-        isCorrect[i] = false;
+        // isCorrect[i] = false;
+        isCorrect[i] = 0;
       }
     }
 
     for (int i=0; i<numOfRows; i++) {
       string line = text.substr(i*numOfCols, (i+1)*numOfCols);
       for (int j=0; j<numOfCols; j++) {
-        if (!isCorrect[numOfRows*i + j]) {
+        // if (!isCorrect[numOfRows*i + j]) {
+        if (isCorrect[numOfRows*i + j] < 10) {
           char myChar = line[j];
           char precedingChar = getPrecedingCharacter(myChar);
 
@@ -234,24 +237,26 @@ void loop() {
 
           // Stop if myChar is found
           char currentChar = getCurrentChar();
-          if(currentChar == myChar && lastOutputChars[numOfRows*i + j].find(precedingChar)) {
-          // if(currentChar == myChar) {
+          // if(currentChar == myChar && lastOutputChars[numOfRows*i + j].find(precedingChar)) {
+          if(currentChar == myChar) {
             digitalWrite(START, LOW);
-            isCorrect[numOfRows*i + j] = true;
+            // isCorrect[numOfRows*i + j] = true;
+            isCorrect[numOfRows*i + j]++;
           } else {
             digitalWrite(START, HIGH);
+            isCorrect[numOfRows*i + j] = 0;
           }
 
-          // Store last few Outputs of selected module
-          if (currentChar != '+') {
-            if (lastOutputChars[numOfRows*i + j].find(currentChar) == string::npos) {
-              lastOutputChars[numOfRows*i + j].push_back(currentChar);
-              cout << "Row: " << i << " Col: " << j << " Should: " << myChar << " Is: " << currentChar << " Last: " << lastOutputChars[numOfRows*i + j] << " NumOfLast: " << size(lastOutputChars[numOfRows*i+j]) << endl;
-              if (size(lastOutputChars[numOfRows*i + j]) > 4) {
-                lastOutputChars[numOfRows*i + j] = lastOutputChars[numOfRows*i + j].substr(1, 5);
-              }
-            }
-          }
+          // // Store last few Outputs of selected module
+          // if (currentChar != '+') {
+          //   if (lastOutputChars[numOfRows*i + j].find(currentChar) == string::npos) {
+          //     lastOutputChars[numOfRows*i + j].push_back(currentChar);
+          //     cout << "Row: " << i << " Col: " << j << " Should: " << myChar << " Is: " << currentChar << " Last: " << lastOutputChars[numOfRows*i + j] << " NumOfLast: " << size(lastOutputChars[numOfRows*i+j]) << endl;
+          //     if (size(lastOutputChars[numOfRows*i + j]) > 3) {
+          //       lastOutputChars[numOfRows*i + j] = lastOutputChars[numOfRows*i + j].substr(1, 5);
+          //     }
+          //   }
+          // }
 
           // Un-select the module, so it continues turning (if character was not found)
           usleep(5);
