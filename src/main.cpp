@@ -9,6 +9,7 @@
 #include <iostream>
 #include <chrono>
 #include <unistd.h>
+#include <ESPmDNS.h>
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -38,15 +39,41 @@ const char* password = "Zipfel-Muetze";
 
 // HTML web page to handle input field
 const char index_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE HTML><html><head>
-  <title>ESP Input Form</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  </head><body>
-  <form action="/get">
-    input: <input type="text" name="input">
-    <input type="submit" value="Flapflap">
-  </form><br>
-</body></html>)rawliteral";
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>flapflap</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type="text/css">
+        #btn_s{
+            width:100px;
+        }
+
+        #btn_i {
+            width:125px;
+        }
+        #formbox {
+            margin:auto 0;
+            text-align: center;
+        }
+    </style>
+  </head>
+	<body>
+		<form action="/get">
+      <div id="formbox">
+        <br>
+        <input type="text" name="input" style="font-size : 28px; height:40px; width:200px"><br />
+        <br>
+        <input type="submit" value="flapflap" style="font-size : 35px; height:50px; width:150px">
+      </div>
+		</form><br>
+    <center>
+      Maximale Textlaenge: 2 x 5 Zeichen. <br>
+      Erlaubte Zeichen: 'A'-'Z', '0'-'9', ' ', '/', '-', '/'
+    </center>
+	</body>
+</html>
+)rawliteral";
 
 void notFound(AsyncWebServerRequest *request) {
   request->send(404, "text/plain", "Not found");
@@ -60,9 +87,15 @@ void setupWebserver() {
     Serial.println("WiFi Failed!");
     return;
   }
+  if(!MDNS.begin("flap")) {
+    Serial.println("Error starting mDNS");
+    return;
+  }
   Serial.println();
   Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
+  string ipAdress = WiFi.localIP().toString().c_str();
+  cout << ipAdress << endl;
+  draft = "flap.local/";
 
   // Send web page with input fields to client
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -74,7 +107,7 @@ void setupWebserver() {
     // GET input value on <ESP_IP>/get?input=<inputMessage>
     String inputMessage = request->getParam("input")->value();
     draft = inputMessage.c_str();
-    request->send(200, "text/html", index_html);
+    request->redirect("/");
   });
   server.onNotFound(notFound);
   server.begin();
