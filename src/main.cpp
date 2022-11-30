@@ -27,10 +27,10 @@ int ADL[] = {25, 26, 27, 4};
 int ADC[] = {21, 19, 18, 17, 16};
 char supportedCharacters[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','V','O','P','Q','R','S','T','U','V','W','X','Y','Z','/','-','1','2','3','4','5','6','7','8','9','0','.',' '};
 
-string draft = "abcdefghij";
+string draft[] = {"        ", "flap.local", "        "};
 
-int numOfRows = 2;
-int numOfCols = 5;
+int numOfRows = 3;
+int numOfCols = 10;
 
 // Set up Webserver
 AsyncWebServer server(80);
@@ -62,14 +62,18 @@ const char index_html[] PROGMEM = R"rawliteral(
 		<form action="/get">
       <div id="formbox">
         <br>
-        <input type="text" name="input" style="font-size : 28px; height:40px; width:200px"><br />
+        <input type="text" name="line1" maxlength="10" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:200px"><br />
+        <br>
+        <input type="text" name="line2" maxlength="10" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:200px"><br />
+        <br>
+        <input type="text" name="line3" maxlength="10" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:200px"><br />
         <br>
         <input type="submit" value="flapflap" style="font-size : 35px; height:50px; width:150px">
       </div>
 		</form><br>
     <center>
-      Maximale Textlaenge: 2 x 5 Zeichen. <br>
-      Erlaubte Zeichen: 'A'-'Z', '0'-'9', ' ', '/', '-', '/'
+      Maximale Textlaenge: 10 Zeichen pro Zeile. <br>
+      Erlaubte Zeichen: 'A'-'Z', '0'-'9', '.', '/', '-', ' '
     </center>
 	</body>
 </html>
@@ -95,7 +99,6 @@ void setupWebserver() {
   Serial.print("IP Address: ");
   string ipAdress = WiFi.localIP().toString().c_str();
   cout << ipAdress << endl;
-  draft = "flap.local/";
 
   // Send web page with input fields to client
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -105,8 +108,12 @@ void setupWebserver() {
   // Send a GET request to <ESP_IP>/get?input=<inputMessage>
   server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
     // GET input value on <ESP_IP>/get?input=<inputMessage>
-    String inputMessage = request->getParam("input")->value();
-    draft = inputMessage.c_str();
+    String line1Message = request->getParam("line1")->value();
+    String line2Message = request->getParam("line2")->value();
+    String line3Message = request->getParam("line3")->value();
+    draft[0] = line1Message.c_str();
+    draft[1] = line2Message.c_str();
+    draft[2] = line3Message.c_str();
     request->redirect("/");
   });
   server.onNotFound(notFound);
@@ -216,8 +223,8 @@ string reviseText(string text) {
     }
 
   }
-  if (size(text) < numOfCols*numOfRows) {
-    int missingSpaces = numOfCols*numOfRows - size(text);
+  if (size(text) < numOfCols) {
+    int missingSpaces = numOfCols - size(text);
     char spaces[missingSpaces];
     fill_n(spaces, missingSpaces, ' ');
     text = text.append(spaces);
@@ -236,29 +243,34 @@ char getPrecedingCharacter(char myChar) {
 
 
 void loop() {
-  string oldDraft = "";
-  string text = "";
+  string oldDraft[] = {"", "", ""};
+  string text[] = {"", "", ""};
   string lastOutputChars[numOfRows * numOfCols];
   // bool isCorrect[numOfRows * numOfCols];
   int isCorrect[numOfRows * numOfCols];
 
   // Iterate through the Matrix (Row-wise)
   while(1) {
-    if (oldDraft != draft) {
-      text = reviseText(draft);
-      oldDraft = draft;
+    if (oldDraft[0] != draft[0] || oldDraft[1] != draft[1] || oldDraft[2] != draft[2]) {
+      text[0] = reviseText(draft[0]);
+      text[1] = reviseText(draft[1]);
+      text[2] = reviseText(draft[2]);
+      oldDraft[0] = draft[0];
+      oldDraft[1] = draft[1];
+      oldDraft[2] = draft[2];
       for (int i=0; i<numOfRows * numOfCols; i++) {
         lastOutputChars[i] = "";
         // isCorrect[i] = false;
         isCorrect[i] = 0;
+        cout << "isCorrect zurückgesetzt" << endl;
       }
     }
 
     for (int i=0; i<numOfRows; i++) {
-      string line = text.substr(i*numOfCols, (i+1)*numOfCols);
+      string line = text[i];
       for (int j=0; j<numOfCols; j++) {
-        // if (!isCorrect[numOfRows*i + j]) {
-        if (isCorrect[numOfRows*i + j] < 10) {
+        // if (!isCorrect[numOfCols*i + j]) {
+        if (isCorrect[numOfCols*i + j] < 10) {
           char myChar = line[j];
           char precedingChar = getPrecedingCharacter(myChar);
 
@@ -270,23 +282,25 @@ void loop() {
 
           // Stop if myChar is found
           char currentChar = getCurrentChar();
-          // if(currentChar == myChar && lastOutputChars[numOfRows*i + j].find(precedingChar)) {
+          // if(currentChar == myChar && lastOutputChars[numOfCols*i + j].find(precedingChar)) {
           if(currentChar == myChar) {
             digitalWrite(START, LOW);
-            // isCorrect[numOfRows*i + j] = true;
-            isCorrect[numOfRows*i + j]++;
+            // isCorrect[numOfCols*i + j] = true;
+            isCorrect[numOfCols*i + j]++;
+            cout << "isCorrect " << i << " " << j << " = " << isCorrect[numOfCols*i + j] << endl;
           } else {
             digitalWrite(START, HIGH);
-            isCorrect[numOfRows*i + j] = 0;
+            isCorrect[numOfCols*i + j] = 0;
+            cout << "isCorrect " << i << " " << j << " nochmal von vorn" << endl;
           }
 
           // // Store last few Outputs of selected module
           // if (currentChar != '+') {
-          //   if (lastOutputChars[numOfRows*i + j].find(currentChar) == string::npos) {
-          //     lastOutputChars[numOfRows*i + j].push_back(currentChar);
-          //     cout << "Row: " << i << " Col: " << j << " Should: " << myChar << " Is: " << currentChar << " Last: " << lastOutputChars[numOfRows*i + j] << " NumOfLast: " << size(lastOutputChars[numOfRows*i+j]) << endl;
-          //     if (size(lastOutputChars[numOfRows*i + j]) > 3) {
-          //       lastOutputChars[numOfRows*i + j] = lastOutputChars[numOfRows*i + j].substr(1, 5);
+          //   if (lastOutputChars[numOfCols*i + j].find(currentChar) == string::npos) {
+          //     lastOutputChars[numOfCols*i + j].push_back(currentChar);
+          //     cout << "Row: " << i << " Col: " << j << " Should: " << myChar << " Is: " << currentChar << " Last: " << lastOutputChars[numOfCols*i + j] << " NumOfLast: " << size(lastOutputChars[numOfCols*i+j]) << endl;
+          //     if (size(lastOutputChars[numOfCols*i + j]) > 3) {
+          //       lastOutputChars[numOfCols*i + j] = lastOutputChars[numOfCols*i + j].substr(1, 5);
           //     }
           //   }
           // }
