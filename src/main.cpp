@@ -72,7 +72,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </div>
 		</form><br>
     <center>
-      Maximale Textlaenge: 10 Zeichen pro Zeile. <br>
+      Max. 10 Zeichen pro Zeile. <br>
       Erlaubte Zeichen: 'A'-'Z', '0'-'9', '.', '/', '-', ' '
     </center>
 	</body>
@@ -246,7 +246,6 @@ void loop() {
   string oldDraft[] = {"", "", ""};
   string text[] = {"", "", ""};
   string lastOutputChars[numOfRows * numOfCols];
-  // bool isCorrect[numOfRows * numOfCols];
   int isCorrect[numOfRows * numOfCols];
 
   // Iterate through the Matrix (Row-wise)
@@ -260,16 +259,13 @@ void loop() {
       oldDraft[2] = draft[2];
       for (int i=0; i<numOfRows * numOfCols; i++) {
         lastOutputChars[i] = "";
-        // isCorrect[i] = false;
         isCorrect[i] = 0;
-        cout << "isCorrect zurückgesetzt" << endl;
       }
     }
 
     for (int i=0; i<numOfRows; i++) {
       string line = text[i];
       for (int j=0; j<numOfCols; j++) {
-        // if (!isCorrect[numOfCols*i + j]) {
         if (isCorrect[numOfCols*i + j] < 10) {
           char myChar = line[j];
           char precedingChar = getPrecedingCharacter(myChar);
@@ -282,28 +278,13 @@ void loop() {
 
           // Stop if myChar is found
           char currentChar = getCurrentChar();
-          // if(currentChar == myChar && lastOutputChars[numOfCols*i + j].find(precedingChar)) {
           if(currentChar == myChar) {
             digitalWrite(START, LOW);
-            // isCorrect[numOfCols*i + j] = true;
             isCorrect[numOfCols*i + j]++;
-            cout << "isCorrect " << i << " " << j << " = " << isCorrect[numOfCols*i + j] << endl;
           } else {
             digitalWrite(START, HIGH);
             isCorrect[numOfCols*i + j] = 0;
-            cout << "isCorrect " << i << " " << j << " nochmal von vorn" << endl;
           }
-
-          // // Store last few Outputs of selected module
-          // if (currentChar != '+') {
-          //   if (lastOutputChars[numOfCols*i + j].find(currentChar) == string::npos) {
-          //     lastOutputChars[numOfCols*i + j].push_back(currentChar);
-          //     cout << "Row: " << i << " Col: " << j << " Should: " << myChar << " Is: " << currentChar << " Last: " << lastOutputChars[numOfCols*i + j] << " NumOfLast: " << size(lastOutputChars[numOfCols*i+j]) << endl;
-          //     if (size(lastOutputChars[numOfCols*i + j]) > 3) {
-          //       lastOutputChars[numOfCols*i + j] = lastOutputChars[numOfCols*i + j].substr(1, 5);
-          //     }
-          //   }
-          // }
 
           // Un-select the module, so it continues turning (if character was not found)
           usleep(5);
