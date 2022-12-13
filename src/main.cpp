@@ -152,20 +152,16 @@ char getPrecedingCharacter(char myChar) {
 
 
 void loop() {
-  string oldDraft[] = {"", "", ""};
   string text[] = {"", "", ""};
   string lastOutputChars[numOfRows * numOfCols];
   int isCorrect[numOfRows * numOfCols];
 
   // Iterate through the Matrix (Row-wise)
   while(1) {
-    if (oldDraft[0] != getDraft(0) || oldDraft[1] != getDraft(1) || oldDraft[2] != getDraft(2)) {
+    if (isDraftChange(2)) {
       text[0] = reviseText(getDraft(0));
       text[1] = reviseText(getDraft(1));
       text[2] = reviseText(getDraft(2));
-      oldDraft[0] = getDraft(0);
-      oldDraft[1] = getDraft(1);
-      oldDraft[2] = getDraft(2);
       for (int i=0; i<numOfRows * numOfCols; i++) {
         lastOutputChars[i] = "";
         isCorrect[i] = 0;
