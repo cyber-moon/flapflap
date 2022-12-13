@@ -30,7 +30,7 @@ char supportedCharacters[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M
 string draft[] = {"        ", "flap.local", "        "};
 
 int numOfRows = 3;
-int numOfCols = 10;
+int numOfCols = 13;
 
 // Set up Webserver
 AsyncWebServer server(80);
@@ -62,17 +62,17 @@ const char index_html[] PROGMEM = R"rawliteral(
 		<form action="/get">
       <div id="formbox">
         <br>
-        <input type="text" name="line1" maxlength="10" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:200px"><br />
+        <input type="text" name="line1" maxlength="13" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:260px"><br />
         <br>
-        <input type="text" name="line2" maxlength="10" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:200px"><br />
+        <input type="text" name="line2" maxlength="13" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:260px"><br />
         <br>
-        <input type="text" name="line3" maxlength="10" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:200px"><br />
+        <input type="text" name="line3" maxlength="13" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:260px"><br />
         <br>
         <input type="submit" value="flapflap" style="font-size : 35px; height:50px; width:150px">
       </div>
 		</form><br>
     <center>
-      Max. 10 Zeichen pro Zeile. <br>
+      Max. 13 Zeichen pro Zeile. <br>
       Erlaubte Zeichen: 'A'-'Z', '0'-'9', '.', '/', '-', ' '
     </center>
 	</body>
