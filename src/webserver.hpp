@@ -54,6 +54,21 @@ const char index_html[] PROGMEM = R"rawliteral(
       Max. 13 Zeichen pro Zeile. <br>
       Erlaubte Zeichen: 'A'-'Z', '0'-'9', '.', '/', '-', ' '
     </center>
+		<form action="/reset">
+      <div id="formbox">
+        <input type="submit" value="reset" style="font-size : 35px; height:50px; width:150px">
+      </div>
+		</form><br>
+		<form action="/xxx">
+      <div id="formbox">
+        <input type="submit" value="XXX" style="font-size : 35px; height:50px; width:150px">
+      </div>
+		</form><br>
+		<form action="/abc">
+      <div id="formbox">
+        <input type="submit" value="ABC" style="font-size : 35px; height:50px; width:150px">
+      </div>
+		</form><br>
 	</body>
 </html>
 )rawliteral";
@@ -86,7 +101,7 @@ void setupWebserver() {
 
   // Send a GET request to <ESP_IP>/get?input=<inputMessage>
   server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    // GET input value on <ESP_IP>/get?input=<inputMessage>
+    // GET input value on <ESP_IP>/get
     String line1Message = request->getParam("line1")->value();
     String line2Message = request->getParam("line2")->value();
     String line3Message = request->getParam("line3")->value();
@@ -96,6 +111,34 @@ void setupWebserver() {
     draft.push_back(line3Message.c_str());
     request->redirect("/");
   });
+
+  server.on("/reset", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    // GET input value on <ESP_IP>/smile
+    draft.clear();
+    draft.push_back(" Willkommen. ");
+    draft.push_back("Los gehts auf");
+    draft.push_back(" flapflap.ch ");
+    request->redirect("/");
+  });
+
+  server.on("/xxx", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    // GET input value on <ESP_IP>/smile
+    draft.clear();
+    draft.push_back("xxxxxxxxxxxxx");
+    draft.push_back("xxxxxxxxxxxxx");
+    draft.push_back("xxxxxxxxxxxxx");
+    request->redirect("/");
+  });
+
+  server.on("/abc", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    // GET input value on <ESP_IP>/smile
+    draft.clear();
+    draft.push_back("ABCDEFGHIJKLM");
+    draft.push_back("NOPQRSTUVWXYZ");
+    draft.push_back("/-1234567890.");
+    request->redirect("/");
+  });
+
   server.onNotFound(notFound);
   server.begin();
 }
