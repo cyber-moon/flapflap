@@ -8,7 +8,6 @@
 using namespace std;
 
 
-// string draft[] = {"", "flapflap.ch", ""};
 vector<string> draft;
 vector<string> oldDraft;
 
@@ -91,13 +90,10 @@ void setupWebserver() {
     String line1Message = request->getParam("line1")->value();
     String line2Message = request->getParam("line2")->value();
     String line3Message = request->getParam("line3")->value();
-	draft.clear();
-	draft.push_back(line1Message.c_str());
-	draft.push_back(line2Message.c_str());
-	draft.push_back(line3Message.c_str());
-//    draft[0] = line1Message.c_str();
-//    draft[1] = line2Message.c_str();
-//    draft[2] = line3Message.c_str();
+    draft.clear();
+    draft.push_back(line1Message.c_str());
+    draft.push_back(line2Message.c_str());
+    draft.push_back(line3Message.c_str());
     request->redirect("/");
   });
   server.onNotFound(notFound);
@@ -105,13 +101,12 @@ void setupWebserver() {
 }
 
 bool isDraftChange(int i) {
-	cout << "Draft size: " << draft.size() << endl;
-
 	if (draft.size() >= i+1) {
 		if (oldDraft.size() == 0) {
 			oldDraft = draft;
 			return true;
 		}
+		// TODO: Make dependent on number of rows, instead hardcoding 0, 1 and 2.
 		else if (oldDraft[0] != draft[0] || oldDraft[1] != draft[1] || oldDraft[2] != draft[2]) {
 			oldDraft = draft;
 			return true;
@@ -122,7 +117,6 @@ bool isDraftChange(int i) {
 
 string getDraft(int i) {
 	if (draft.size() >= i+1) {
-		cout << "returned: " << draft[i] << endl;
 		return draft[i];
 	}
 	return "";

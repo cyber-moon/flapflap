@@ -27,11 +27,6 @@ char supportedCharacters[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M
 int numOfRows = 3;
 int numOfCols = 13;
 
-
-
-
-
-
 // l: 1, 2, 3 or 4
 // val: HIGH or LOW
 void setADL(int l, uint8_t val) {
@@ -153,17 +148,18 @@ char getPrecedingCharacter(char myChar) {
 
 void loop() {
   string text[] = {"", "", ""};
-  string lastOutputChars[numOfRows * numOfCols];
   int isCorrect[numOfRows * numOfCols];
+  for (int i=0; i<numOfRows * numOfCols; i++) {
+    isCorrect[i] = 10;
+  }
 
   // Iterate through the Matrix (Row-wise)
   while(1) {
-    if (isDraftChange(2)) {
+    if (isDraftChange(numOfRows-1)) {
       text[0] = reviseText(getDraft(0));
       text[1] = reviseText(getDraft(1));
       text[2] = reviseText(getDraft(2));
       for (int i=0; i<numOfRows * numOfCols; i++) {
-        lastOutputChars[i] = "";
         isCorrect[i] = 0;
       }
     }
