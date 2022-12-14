@@ -24,16 +24,13 @@ const char index_html[] PROGMEM = R"rawliteral(
 		<title>flapflap</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
     <style type="text/css">
-        #btn_s{
-            width:100px;
-        }
-
-        #btn_i {
-            width:125px;
-        }
         #formbox {
             margin:auto 0;
             text-align: center;
+        }
+        .colform { 
+          float:left; 
+          width:33%; 
         }
     </style>
   </head>
@@ -53,29 +50,21 @@ const char index_html[] PROGMEM = R"rawliteral(
     <center>
       Max. 13 Zeichen pro Zeile. <br>
       Erlaubte Zeichen: 'A'-'Z', '0'-'9', '.', '/', '-', ' '
-    </center>
-		<form action="/reset" method='post'>
-      <div id="formbox">
-        <input type="submit" value="reset" style="font-size : 35px; height:50px; width:150px">
-      </div>
-		</form><br>
-		<form action="/xxx" method='post'>
-      <div id="formbox">
-        <input type="submit" value="XXX" style="font-size : 35px; height:50px; width:150px">
-      </div>
-		</form><br>
-		<form action="/abc" method='post'>
-      <div id="formbox">
-        <input type="submit" value="ABC" style="font-size : 35px; height:50px; width:150px">
-      </div>
-		</form><br>
+    </center><br>
+    <center>
+      <form class="colform" action="/reset" method='post'>
+        <input type="submit" value="reset" style="font-size : 35px; height:50px; width:100px">
+      </form>
+      <form class="colform" action="/xxx" method='post'>
+        <input type="submit" value="XXX" style="font-size : 35px; height:50px; width:100px">
+      </form>
+      <form class="colform" action="/abc" method='post'>
+        <input type="submit" value="ABC" style="font-size : 35px; height:50px; width:100px">
+      </form>
+    </center><br>
 	</body>
 </html>
 )rawliteral";
-
-void notFound(AsyncWebServerRequest *request) {
-  request->send(404, "text/plain", "Not found");
-}
 
 void setupWebserver() {
   Serial.begin(115200);
@@ -89,10 +78,7 @@ void setupWebserver() {
     Serial.println("Error starting mDNS");
     return;
   }
-  Serial.println();
-  Serial.print("IP Address: ");
-  string ipAdress = WiFi.localIP().toString().c_str();
-  cout << ipAdress << endl;
+  cout << "IP Address: " << WiFi.localIP().toString().c_str() << endl;
 
   // Send web page with input fields to client
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -133,7 +119,10 @@ void setupWebserver() {
     request->redirect("/");
   });
 
-  server.onNotFound(notFound);
+  server.onNotFound([] (AsyncWebServerRequest *request) {
+    request->send(404, "text/plain", "Not found");
+  });
+
   server.begin();
 }
 
@@ -143,11 +132,12 @@ bool isDraftChange(int i) {
 			oldDraft = draft;
 			return true;
 		}
-		// TODO: Make dependent on number of rows, instead hardcoding 0, 1 and 2.
-		else if (oldDraft[0] != draft[0] || oldDraft[1] != draft[1] || oldDraft[2] != draft[2]) {
-			oldDraft = draft;
-			return true;
-		}
+    for (int x=0; x<=i; x++) {
+      if (oldDraft[x] != draft[x]) {
+        oldDraft = draft;
+        return true;
+      }
+    }
 	}
 	return false;
 }
