@@ -38,7 +38,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     </style>
   </head>
 	<body>
-		<form action="/get">
+		<form action='/input' method='post'>
       <div id="formbox">
         <br>
         <input type="text" name="line1" maxlength="13" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:260px"><br />
@@ -54,17 +54,17 @@ const char index_html[] PROGMEM = R"rawliteral(
       Max. 13 Zeichen pro Zeile. <br>
       Erlaubte Zeichen: 'A'-'Z', '0'-'9', '.', '/', '-', ' '
     </center>
-		<form action="/reset">
+		<form action="/reset" method='post'>
       <div id="formbox">
         <input type="submit" value="reset" style="font-size : 35px; height:50px; width:150px">
       </div>
 		</form><br>
-		<form action="/xxx">
+		<form action="/xxx" method='post'>
       <div id="formbox">
         <input type="submit" value="XXX" style="font-size : 35px; height:50px; width:150px">
       </div>
 		</form><br>
-		<form action="/abc">
+		<form action="/abc" method='post'>
       <div id="formbox">
         <input type="submit" value="ABC" style="font-size : 35px; height:50px; width:150px">
       </div>
@@ -99,21 +99,17 @@ void setupWebserver() {
     request->send_P(200, "text/html", index_html);
   });
 
-  // Send a GET request to <ESP_IP>/get?input=<inputMessage>
-  server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    // GET input value on <ESP_IP>/get
-    String line1Message = request->getParam("line1")->value();
-    String line2Message = request->getParam("line2")->value();
-    String line3Message = request->getParam("line3")->value();
+  server.on("/input", HTTP_POST, [] (AsyncWebServerRequest *request) {
+    int params = request->params();
     draft.clear();
-    draft.push_back(line1Message.c_str());
-    draft.push_back(line2Message.c_str());
-    draft.push_back(line3Message.c_str());
+    for (int i = 0; i < params; i++) {
+      AsyncWebParameter* p = request->getParam(i);
+      draft.push_back(p->value().c_str());
+    }
     request->redirect("/");
   });
 
-  server.on("/reset", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    // GET input value on <ESP_IP>/smile
+  server.on("/reset", HTTP_POST, [] (AsyncWebServerRequest *request) {
     draft.clear();
     draft.push_back(" Willkommen. ");
     draft.push_back("Los gehts auf");
@@ -121,8 +117,7 @@ void setupWebserver() {
     request->redirect("/");
   });
 
-  server.on("/xxx", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    // GET input value on <ESP_IP>/smile
+  server.on("/xxx", HTTP_POST, [] (AsyncWebServerRequest *request) {
     draft.clear();
     draft.push_back("xxxxxxxxxxxxx");
     draft.push_back("xxxxxxxxxxxxx");
@@ -130,8 +125,7 @@ void setupWebserver() {
     request->redirect("/");
   });
 
-  server.on("/abc", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    // GET input value on <ESP_IP>/smile
+  server.on("/abc", HTTP_POST, [] (AsyncWebServerRequest *request) {
     draft.clear();
     draft.push_back("ABCDEFGHIJKLM");
     draft.push_back("NOPQRSTUVWXYZ");
