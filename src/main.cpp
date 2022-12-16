@@ -7,7 +7,6 @@
 #include <Arduino.h>
 #include <string>
 #include <iostream>
-#include <chrono>
 #include <unistd.h>
 #include <webserver.hpp>
 using namespace std;
@@ -23,26 +22,32 @@ int ADC[] = {21, 19, 18, 17, 16};
 int DATA[] = {32, 33, 34, 35, 36, 39};
 char supportedCharacters[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','V','O','P','Q','R','S','T','U','V','W','X','Y','Z','/','-','1','2','3','4','5','6','7','8','9','0','.',' '};
 
-// Select (HIGH) or deselect (LOW) each ADL-Pin (i.e. each row)
-// l: 0, 1, 2 or 3
-// val: HIGH or LOW
-void setADL(int l, uint8_t val) {
-  digitalWrite(ADL[l], val);
+/**
+ * Select (HIGH) or deselect (LOW) each ADL-Pin (i.e. each row)
+ * @param row 0, 1, 2 or 3
+ * @param val HIGH or LOW
+*/
+void setADL(int row, uint8_t val) {
+  digitalWrite(ADL[row], val);
 }
 
-// c: Column-number ([0-n]), n_max=31
-//    c=0: Modul on the very left (--> ADC=01111 (ADC[3]-ADC[0] are inverted))
-//    c=31: Modul on the very right (--> ADC=10000)
-void selectADC(int c) {
-  digitalWrite(ADC[4], (c/16 == 1));  // ADC[4] refers to the EN pin of the Multiplexer-chip, thus it is inverted
-  c = c%16;
-  digitalWrite(ADC[3], (c/8 == 0));
-  c = c%8;
-  digitalWrite(ADC[2], (c/4 == 0));
-  c = c%4;
-  digitalWrite(ADC[1], (c/2 == 0));
-  c = c%2;
-  digitalWrite(ADC[0], (c/1 == 0));
+/**
+ * Select a given column number c.
+ * Automatically un-selects all other columns.
+ * @param col Column-number ([0-n]), n_max=31
+ *            c=0: Modul on the very left (--> ADC=01111 (ADC[3]-ADC[0] are inverted))
+ *            c=31: Modul on the very right (--> ADC=10000)
+*/
+void selectADC(int col) {
+  digitalWrite(ADC[4], (col/16 == 1));  // ADC[4] refers to the EN pin of the Multiplexer-chip, thus it is inverted
+  col = col%16;
+  digitalWrite(ADC[3], (col/8 == 0));
+  col = col%8;
+  digitalWrite(ADC[2], (col/4 == 0));
+  col = col%4;
+  digitalWrite(ADC[1], (col/2 == 0));
+  col = col%2;
+  digitalWrite(ADC[0], (col/1 == 0));
 }
 
 /**
@@ -102,14 +107,19 @@ char getCurrentChar() {
   return '+'; 
 }
 
+/**
+ * Remove unsupported Characters and, if necessary, add spaces at the end of line
+ * @param text  single row of text, possibly containing unsupported characters (e.g. "fräch!")
+ * @returns     single row of text, with characters replaced an missing spaces (e.g. "fr/ch/     ")
+*/
 string reviseText(string text) {
+  char* supportedCharacters_end = supportedCharacters+size(supportedCharacters);
   for (int j=0; j<size(text); j++) {
     text[j] = toupper(text[j]);
-    if (find(supportedCharacters, supportedCharacters+size(supportedCharacters), text[j]) == (supportedCharacters+size(supportedCharacters))) {
+    if (find(supportedCharacters, supportedCharacters_end, text[j]) == supportedCharacters_end) {
       cout << "Unsupported character: " << text[j] << endl;
       text[j] = '/';
     }
-
   }
   if (size(text) < numOfCols) {
     int missingSpaces = numOfCols - size(text);
@@ -120,12 +130,14 @@ string reviseText(string text) {
   return text;
 }
 
+/**
+ * Loop ESP-32
+ * [Internal Function, do not change naming]
+*/
 void loop() {
   string text[] = {"", "", ""};
   int isCorrect[numOfRows * numOfCols];
-  for (int i=0; i<numOfRows * numOfCols; i++) {
-    isCorrect[i] = 10;
-  }
+  fill_n(isCorrect, numOfRows * numOfCols, 10);
 
   // Iterate through the Matrix (Row-wise)
   while(1) {
@@ -133,9 +145,7 @@ void loop() {
       text[0] = reviseText(getDraft(0));
       text[1] = reviseText(getDraft(1));
       text[2] = reviseText(getDraft(2));
-      for (int i=0; i<numOfRows * numOfCols; i++) {
-        isCorrect[i] = 0;
-      }
+      fill_n(isCorrect, numOfRows * numOfCols, 0);
     }
 
     for (int i=0; i<numOfRows; i++) {
@@ -169,7 +179,3 @@ void loop() {
     } 
   }
 }
-
-//   chrono::steady_clock::time_point begin = chrono::steady_clock::now();
-//   chrono::steady_clock::time_point end = chrono::steady_clock::now();
-//   cout << endl << "  Waited for valid position for " << chrono::duration_cast<chrono::microseconds>(end - begin).count() << "[µs]" << endl;
