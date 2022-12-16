@@ -12,16 +12,11 @@
 #include <webserver.hpp>
 using namespace std;
 
-#define START 22
-#define DATA_0 32
-#define DATA_1 33
-#define DATA_2 34
-#define DATA_3 35
-#define DATA_4 36
-#define DATA_5 39
-
+// Define IO-Pins
+int START = 22;
 int ADL[] = {25, 26, 27, 4};
 int ADC[] = {21, 19, 18, 17, 16};
+int DATA[] = {32, 33, 34, 35, 36, 39};
 char supportedCharacters[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','V','O','P','Q','R','S','T','U','V','W','X','Y','Z','/','-','1','2','3','4','5','6','7','8','9','0','.',' '};
 
 int numOfRows = 3;
@@ -76,12 +71,9 @@ void setup() {
   for (int i=0; i<=4; i++) {
     pinMode(ADC[i], OUTPUT);
   }
-  pinMode(DATA_0, INPUT);
-  pinMode(DATA_1, INPUT);
-  pinMode(DATA_2, INPUT);
-  pinMode(DATA_3, INPUT);
-  pinMode(DATA_4, INPUT);
-  pinMode(DATA_5, INPUT);
+  for (int i=0; i<=5; i++) {
+    pinMode(DATA[i], INPUT);
+  }
 
   // Start all modules and then de-select them
   selectAllModules();
@@ -89,14 +81,12 @@ void setup() {
   deselectAllModules();
 }
 
+// Get current position, binary encoded (e.g. "001101")
 string getCurrentPosition() {
   string binaryCode = "";
-  binaryCode.append(to_string(!!!digitalRead(DATA_5)));
-  binaryCode.append(to_string(!!!digitalRead(DATA_4)));
-  binaryCode.append(to_string(!!!digitalRead(DATA_3)));
-  binaryCode.append(to_string(!!!digitalRead(DATA_2)));
-  binaryCode.append(to_string(!!!digitalRead(DATA_1)));
-  binaryCode.append(to_string(!!!digitalRead(DATA_0)));
+  for (int i=5; i>=0; i--) {
+    binaryCode.append(to_string(!digitalRead(DATA[i])));
+  }
   return binaryCode;
 }
 
