@@ -12,6 +12,10 @@
 #include <webserver.hpp>
 using namespace std;
 
+// Define Screen Size
+int numOfRows = 3;
+int numOfCols = 13;
+
 // Define IO-Pins
 int START = 22;
 int ADL[] = {25, 26, 27, 4};
@@ -19,18 +23,18 @@ int ADC[] = {21, 19, 18, 17, 16};
 int DATA[] = {32, 33, 34, 35, 36, 39};
 char supportedCharacters[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','V','O','P','Q','R','S','T','U','V','W','X','Y','Z','/','-','1','2','3','4','5','6','7','8','9','0','.',' '};
 
-int numOfRows = 3;
-int numOfCols = 13;
-
-// l: 1, 2, 3 or 4
+// Select (HIGH) or deselect (LOW) each ADL-Pin (i.e. each row)
+// l: 0, 1, 2 or 3
 // val: HIGH or LOW
 void setADL(int l, uint8_t val) {
-  digitalWrite(ADL[l-1], val);
+  digitalWrite(ADL[l], val);
 }
 
-// c: Column-number ([0-n])
+// c: Column-number ([0-n]), n_max=31
+//    c=0: Modul on the very left (--> ADC=01111 (ADC[3]-ADC[0] are inverted))
+//    c=31: Modul on the very right (--> ADC=10000)
 void selectADC(int c) {
-  digitalWrite(ADC[4], (c/16 == 1));
+  digitalWrite(ADC[4], (c/16 == 1));  // ADC[4] refers to the EN pin of the Multiplexer-chip, thus it is inverted
   c = c%16;
   digitalWrite(ADC[3], (c/8 == 0));
   c = c%8;
@@ -41,25 +45,10 @@ void selectADC(int c) {
   digitalWrite(ADC[0], (c/1 == 0));
 }
 
-void selectAllModules() {
-  for (int i=0; i<=3; i++) {
-    digitalWrite(ADL[i], HIGH);
-  }
-  for (int i=0; i<=4; i++) {
-    digitalWrite(ADC[i], HIGH);
-  }
-}
-
-void deselectAllModules() {
-  for (int i=0; i<=3; i++) {
-    digitalWrite(ADL[i], LOW);
-  }
-  for (int i=0; i<=3; i++) {
-    digitalWrite(ADC[i], LOW);
-  }
-  digitalWrite(ADC[4], HIGH);
-}
-
+/**
+ * Setup ESP-32
+ * [Internal Function, do not change naming]
+*/
 void setup() {
   Serial.begin(115200);
   setupWebserver();
@@ -74,15 +63,12 @@ void setup() {
   for (int i=0; i<=5; i++) {
     pinMode(DATA[i], INPUT);
   }
-
-  // Start all modules and then de-select them
-  selectAllModules();
-  digitalWrite(START, HIGH);
-  deselectAllModules();
 }
 
-// Get current position, binary encoded (e.g. "001101")
-string getCurrentPosition() {
+/**
+ * @returns String containing binary code of currently selected module
+*/
+string getCurrentBinaryCode() {
   string binaryCode = "";
   for (int i=5; i>=0; i--) {
     binaryCode.append(to_string(!digitalRead(DATA[i])));
@@ -90,12 +76,20 @@ string getCurrentPosition() {
   return binaryCode;
 }
 
+/**
+ * @returns Character of currently selected module
+*/
 char getCurrentChar() {
-  string binaryCode = getCurrentPosition();
+  string binaryCode = getCurrentBinaryCode();
   if (binaryCode == "000000") {
     return '+'; // just return some non-existent value
   } 
-  int intCode = (binaryCode[5-0]-'0')*1 + (binaryCode[5-1]-'0')*2 + (binaryCode[5-2]-'0')*4 + (binaryCode[5-3]-'0')*8 + (binaryCode[5-4]-'0')*16 + (binaryCode[5-5]-'0')*32;
+  int intCode = (binaryCode[5]-'0')*1 + (binaryCode[4]-'0')*2 + (binaryCode[3]-'0')*4 + (binaryCode[2]-'0')*8 + (binaryCode[1]-'0')*16 + (binaryCode[0]-'0')*32;
+
+  // intCode 1-26: Characters (A-Z)
+  // intCode 45-57: Numbers (0-9) and dash (-)
+  // intCode 32, 39: Space ( ) and slash (/)
+  // Else: return some non-existent value (+)
   if (intCode >= 1 && intCode <= 26) {
     return char(64 + intCode);
   } else if (intCode >= 45 && intCode <= 57) {
@@ -105,7 +99,7 @@ char getCurrentChar() {
   } else if (intCode == 39) {
     return '/';
   }
-  return '+';
+  return '+'; 
 }
 
 string reviseText(string text) {
@@ -125,16 +119,6 @@ string reviseText(string text) {
   }
   return text;
 }
-
-char getPrecedingCharacter(char myChar) {
-  char* position = find(supportedCharacters, supportedCharacters+size(supportedCharacters), myChar);
-  char precedingChar = *(position-1);
-  if (position == supportedCharacters) {
-    precedingChar = ' ';
-  }
-  return precedingChar;
-}
-
 
 void loop() {
   string text[] = {"", "", ""};
@@ -159,13 +143,12 @@ void loop() {
       for (int j=0; j<numOfCols; j++) {
         if (isCorrect[numOfCols*i + j] < 10) {
           char myChar = line[j];
-          char precedingChar = getPrecedingCharacter(myChar);
 
           // Try to stop the motor
           digitalWrite(START, LOW);
           usleep(5);
           selectADC(j);
-          setADL(i+1, HIGH);
+          setADL(i, HIGH);
 
           // Stop if myChar is found
           char currentChar = getCurrentChar();
@@ -179,7 +162,7 @@ void loop() {
 
           // Un-select the module, so it continues turning (if character was not found)
           usleep(5);
-          setADL(i+1, LOW);
+          setADL(i, LOW);
           selectADC(31);
         }
       }
