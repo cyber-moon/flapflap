@@ -1,6 +1,16 @@
 #include "Display.h"
 
+using namespace std;
+
+
 /////////////////////////////////// PRIVATE ///////////////////////////////////////
+
+// Define Screen Size
+const int Display::numOfRows = 3;
+const int Display::numOfCols = 13;
+
+// TODO: Why can't I do this STATIC & CONST?
+char Display::supportedCharacters[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','V','O','P','Q','R','S','T','U','V','W','X','Y','Z','/','-','1','2','3','4','5','6','7','8','9','0','.',' '};
 
 const int Display::START = 22;
 const int Display::DATA[] = {32, 33, 34, 35, 36, 39};
@@ -16,6 +26,29 @@ string Display::getCurrentBinaryCode() {
     binaryCode.append(to_string(!digitalRead(DATA[i])));
   }
   return binaryCode;
+}
+
+/**
+ * Remove unsupported Characters and, if necessary, add spaces at the end of line
+ * @param text  single row of text, possibly containing unsupported characters (e.g. "fräch!")
+ * @returns     single row of text, with characters replaced an missing spaces (e.g. "fr/ch/     ")
+*/
+string Display::reviseText(string text) {
+  char* supportedCharacters_end = supportedCharacters+size(supportedCharacters);
+  for (int j=0; j<size(text); j++) {
+    text[j] = toupper(text[j]);
+    if (find(supportedCharacters, supportedCharacters_end, text[j]) == supportedCharacters_end) {
+      cout << "Unsupported character: " << text[j] << endl;
+      text[j] = '/';
+    }
+  }
+  if (size(text) < numOfCols) {
+    int missingSpaces = numOfCols - size(text);
+    char spaces[missingSpaces];
+    fill_n(spaces, missingSpaces, ' ');
+    text = text.append(spaces);
+  }
+  return text;
 }
 
 /////////////////////////////////// PUBLIC ///////////////////////////////////////
@@ -81,7 +114,7 @@ char Display::getCurrentChar() {
   int intCode = (binaryCode[5]-'0')*1 + (binaryCode[4]-'0')*2 + (binaryCode[3]-'0')*4 + (binaryCode[2]-'0')*8 + (binaryCode[1]-'0')*16 + (binaryCode[0]-'0')*32;
 
   // intCode 1-26: Characters (A-Z)
-  // intCode 45-57: Numbers (0-9) and dash (-)
+  // intCode 45-57: Numbers (0-9) and dash (-) and point (.)
   // intCode 32, 39: Space ( ) and slash (/)
   // Else: return some non-existent value (+)
   if (intCode >= 1 && intCode <= 26) {
@@ -94,4 +127,13 @@ char Display::getCurrentChar() {
     return '/';
   }
   return '+'; 
+}
+
+/**
+ * Print the given string-vector (1 line per vector-element)
+ * @param text	Vector containing num_of_rows strings with num_of_cols characters each
+*/
+void Display::printText(vector<string>& AAAAAAAAAAAAAAAAAAAAAA) {
+
+
 }
