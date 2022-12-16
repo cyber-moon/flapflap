@@ -16,7 +16,7 @@ AsyncWebServer server(80);
 const char* ssid = "zimtbaum";
 const char* password = "Zipfel-Muetze";
 
-// HTML web page to handle input field
+// HTML web page
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML>
 <html>
@@ -74,6 +74,7 @@ void setupWebserver() {
     Serial.println("WiFi Failed!");
     return;
   }
+  // Make server accessible over 'flap.local' in WLAN Network
   if(!MDNS.begin("flap")) {
     Serial.println("Error starting mDNS");
     return;
@@ -85,6 +86,7 @@ void setupWebserver() {
     request->send_P(200, "text/html", index_html);
   });
 
+  // Handle API Requests
   server.on("/input", HTTP_POST, [] (AsyncWebServerRequest *request) {
     int params = request->params();
     draft.clear();
