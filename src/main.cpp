@@ -151,16 +151,17 @@ void loop() {
     for (int i=0; i<numOfRows; i++) {
       string line = text[i];
       for (int j=0; j<numOfCols; j++) {
+        // Correct char needs to be recognized in 10 iterations in a row to be valid
         if (isCorrect[numOfCols*i + j] < 10) {
           char myChar = line[j];
 
-          // Try to stop the motor
+          // Try to stop the motor by de-activating START and selecting the module
           digitalWrite(START, LOW);
           usleep(5);
           selectADC(j);
           setADL(i, HIGH);
 
-          // Stop if myChar is found
+          // Stop if myChar is found (set START to LOW)
           char currentChar = getCurrentChar();
           if(currentChar == myChar) {
             digitalWrite(START, LOW);
