@@ -133,7 +133,72 @@ char Display::getCurrentChar() {
  * Print the given string-vector (1 line per vector-element)
  * @param text	Vector containing num_of_rows strings with num_of_cols characters each
 */
-void Display::printText(vector<string>& AAAAAAAAAAAAAAAAAAAAAA) {
+void Display::printText(vector<string>& AAAAAAAAAAAAAAAAAAAAAA, Webserver& webserver) {
+// void Display::printText(vector<string>& AAAAAAAAAAAAAAAAAAAAAA) {
+
+  cout << "printing..............." << endl;
+  string text[] = {"", "", ""};
+
+	int isCorrect[numOfRows * numOfCols];
+  // fill_n(isCorrect, numOfRows * numOfCols, 0);
+	fill_n(isCorrect, numOfRows * numOfCols, 10);
+
+  // text[0] = reviseText(AAAAAAAAAAAAAAAAAAAAAA[0]);
+  // text[1] = reviseText(AAAAAAAAAAAAAAAAAAAAAA[1]);
+  // text[2] = reviseText(AAAAAAAAAAAAAAAAAAAAAA[2]);
+
+	// Iterate through the Matrix (Row-wise)
+
+	while(1) {
+    cout << "Iterating while loop" << endl;
+    if (webserver.isDraftChange(numOfRows-1)) {
+      cout << "Draft changed!" << endl;
+      text[0] = reviseText(webserver.getDraft(0));
+      text[1] = reviseText(webserver.getDraft(1));
+      text[2] = reviseText(webserver.getDraft(2));
+      fill_n(isCorrect, numOfRows * numOfCols, 0);
+    }
+
+		for (int i=0; i<numOfRows; i++) {
+			string line = text[i];
+			for (int j=0; j<numOfCols; j++) {
+				// Correct char needs to be recognized in 10 iterations in a row to be valid
+				if (isCorrect[numOfCols*i + j] < 10) {
+				char myChar = line[j];
+
+				// Try to stop the motor by de-activating START and selecting the module
+				setSTART(LOW);
+				usleep(5);
+				selectADC(j);
+				setADL(i, HIGH);
+
+				// Stop if myChar is found (set START to LOW)
+				char currentChar = getCurrentChar();
+				if(currentChar == myChar) {
+				setSTART(LOW);
+					isCorrect[numOfCols*i + j]++;
+				} else {
+				setSTART(HIGH);
+					isCorrect[numOfCols*i + j] = 0;
+				}
+
+				// Un-select the module, so it continues turning (if character was not found)
+				usleep(5);
+				setADL(i, LOW);
+				selectADC(31);
+				}
+			}
+		} 
+
+    // int sum = 0;
+    // for (int i=0; i<numOfCols*numOfRows; i++) {
+    //   sum += isCorrect[i];
+    // }
+    // if (sum >= 10*numOfCols*numOfRows) {
+    //   break;
+    // }
+
+	}
 
 
 }

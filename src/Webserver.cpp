@@ -1,7 +1,7 @@
 #include <Webserver.h>
+#include <thread>
 
 using namespace std;
-
 
 /////////////////////////////////// PRIVATE ///////////////////////////////////////
 
@@ -17,17 +17,22 @@ AsyncWebServer Webserver::server = AsyncWebServer(80);
 void Webserver::registerHandlers() {
 	// Basic Homepage
 	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-	request->send_P(200, "text/html", index_html);
+		request->send_P(200, "text/html", index_html);
+		cout << "printed default page" << endl;
 	});
 
 	// Handle API Requests
 	server.on("/input", HTTP_POST, [&] (AsyncWebServerRequest *request) {
+		cout << "requesting input" << endl;
 		int params = request->params();
 		draft.clear();
 		for (int i = 0; i < params; i++) {
 			AsyncWebParameter* p = request->getParam(i);
 			draft.push_back(p->value().c_str());
 		}
+		// printing(disp, draft);
+		// disp.printText(draft);
+		// std::thread t1(printing, draft);
 		request->redirect("/");
 	});
 
@@ -37,6 +42,7 @@ void Webserver::registerHandlers() {
 		draft.push_back("Los gehts auf");
 		draft.push_back(" flapflap.ch ");
 		request->redirect("/");
+		// disp.printText(draft);
 	});
 
 	server.on("/xxx", HTTP_POST, [&] (AsyncWebServerRequest *request) {
@@ -45,6 +51,7 @@ void Webserver::registerHandlers() {
 		draft.push_back("xxxxxxxxxxxxx");
 		draft.push_back("xxxxxxxxxxxxx");
 		request->redirect("/");
+		// disp.printText(draft);
 	});
 
 	server.on("/abc", HTTP_POST, [&] (AsyncWebServerRequest *request) {
@@ -53,6 +60,7 @@ void Webserver::registerHandlers() {
 		draft.push_back("NOPQRSTUVWXYZ");
 		draft.push_back("/-1234567890.");
 		request->redirect("/");
+		// disp.printText(draft);
 	});
 
 	server.onNotFound([] (AsyncWebServerRequest *request) {
@@ -60,8 +68,15 @@ void Webserver::registerHandlers() {
 	});
 }
 
+// void Webserver::printing (Display& myDisp, vector<string>& text) {
+// 	cout << "Trying to print with: \n" << text[0] << "\n" << text[1] << "\n" << text[2] << endl;
+// 	// myDisp.printText(text);
+// }
+
+
 /////////////////////////////////// PUBLIC ///////////////////////////////////////
 
+// Webserver::Webserver(Display disp) {
 Webserver::Webserver() {
 	Serial.begin(115200);
 	WiFi.mode(WIFI_STA);
@@ -76,6 +91,8 @@ Webserver::Webserver() {
 		return;
 	}
 	cout << "IP Address: " << WiFi.localIP().toString().c_str() << endl;
+
+	// this->disp = disp;
 
 	registerHandlers();
 	server.begin();
@@ -108,10 +125,10 @@ bool Webserver::isDraftChange(int i) {
  * @returns string containing draft of row i
 */
 string Webserver::getDraft(int i) {
-if (draft.size() >= i+1) {
-	return draft[i];
-}
-return "";
+	if (draft.size() >= i+1) {
+		return draft[i];
+	}
+	return "";
 }
 
 // HTML web page
