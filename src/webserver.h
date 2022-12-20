@@ -11,7 +11,7 @@ using namespace std;
 #ifndef WEBSERVER_H
 #define WEBSERVER_H
 
-// #include <Display.h>
+#include <Display.h>
 
 class Webserver {
 private:
@@ -27,7 +27,7 @@ private:
   vector<string> oldDraft;
   void registerHandlers();
 
-  // Display disp;
+  Display disp;
   // static void printing (Display& myDisp, vector<string>& text);
 
 

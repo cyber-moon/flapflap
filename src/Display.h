@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 
-#include <Webserver.h>
+// #include <Webserver.h>
 
 
 using namespace std;
@@ -40,8 +40,9 @@ public:
 	void setADL(int row, uint8_t val);
 	void selectADC(int col);
 	char getCurrentChar();
-	void printText(vector<string>& AAAAAAAAAAAAAAAAAAAAAA, Webserver& webserver);
-	// void printText(vector<string>& AAAAAAAAAAAAAAAAAAAAAA);
+	// void printText(vector<string>& AAAAAAAAAAAAAAAAAAAAAA, Webserver& webserver);
+	// void printText();
+	void printText(vector<string>& AAAAAAAAAAAAAAAAAAAAAA);
 };
 
 #endif

@@ -31,7 +31,7 @@ void Webserver::registerHandlers() {
 			draft.push_back(p->value().c_str());
 		}
 		// printing(disp, draft);
-		// disp.printText(draft);
+		disp.printText(draft);
 		// std::thread t1(printing, draft);
 		request->redirect("/");
 	});
