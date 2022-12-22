@@ -23,44 +23,45 @@ void Webserver::registerHandlers() {
 
 	// Handle API Requests
 	server.on("/input", HTTP_POST, [&] (AsyncWebServerRequest *request) {
-		cout << "requesting input" << endl;
 		int params = request->params();
-		draft.clear();
+		vector<string> draft;
 		for (int i = 0; i < params; i++) {
 			AsyncWebParameter* p = request->getParam(i);
 			draft.push_back(p->value().c_str());
 		}
-		// printing(disp, draft);
+
 		disp.printText(draft);
+		// TODO: Use threads
+		// printing(disp, draft);
 		// std::thread t1(printing, draft);
 		request->redirect("/");
 	});
 
 	server.on("/reset", HTTP_POST, [&] (AsyncWebServerRequest *request) {
-		draft.clear();
+		vector<string> draft;
 		draft.push_back(" Willkommen. ");
 		draft.push_back("Los gehts auf");
 		draft.push_back(" flapflap.ch ");
+		disp.printText(draft);
 		request->redirect("/");
-		// disp.printText(draft);
 	});
 
 	server.on("/xxx", HTTP_POST, [&] (AsyncWebServerRequest *request) {
-		draft.clear();
+		vector<string> draft;
 		draft.push_back("xxxxxxxxxxxxx");
 		draft.push_back("xxxxxxxxxxxxx");
 		draft.push_back("xxxxxxxxxxxxx");
+		disp.printText(draft);
 		request->redirect("/");
-		// disp.printText(draft);
 	});
 
 	server.on("/abc", HTTP_POST, [&] (AsyncWebServerRequest *request) {
-		draft.clear();
+		vector<string> draft;
 		draft.push_back("ABCDEFGHIJKLM");
 		draft.push_back("NOPQRSTUVWXYZ");
 		draft.push_back("/-1234567890.");
+		disp.printText(draft);
 		request->redirect("/");
-		// disp.printText(draft);
 	});
 
 	server.onNotFound([] (AsyncWebServerRequest *request) {
@@ -68,6 +69,7 @@ void Webserver::registerHandlers() {
 	});
 }
 
+// TODO: Delete this function if not necessary anymore
 // void Webserver::printing (Display& myDisp, vector<string>& text) {
 // 	cout << "Trying to print with: \n" << text[0] << "\n" << text[1] << "\n" << text[2] << endl;
 // 	// myDisp.printText(text);
@@ -76,7 +78,6 @@ void Webserver::registerHandlers() {
 
 /////////////////////////////////// PUBLIC ///////////////////////////////////////
 
-// Webserver::Webserver(Display disp) {
 Webserver::Webserver() {
 	Serial.begin(115200);
 	WiFi.mode(WIFI_STA);
@@ -92,43 +93,8 @@ Webserver::Webserver() {
 	}
 	cout << "IP Address: " << WiFi.localIP().toString().c_str() << endl;
 
-	// this->disp = disp;
-
 	registerHandlers();
 	server.begin();
-}
-
-/**
- * Check if the draft changed, i.e. if there was any input from the webpage
- * @param i	Number of rows of the display
- * @returns True if there is a new draft available for printing, False otherwise
-*/
-bool Webserver::isDraftChange(int i) {
-	if (draft.size() >= i+1) {
-		if (oldDraft.size() == 0) {
-			oldDraft = draft;
-			return true;
-		}
-		for (int x=0; x<=i; x++) {
-			if (oldDraft[x] != draft[x]) {
-				oldDraft = draft;
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-/**
- * Get the draft for row i
- * @param i	Row to get the draft for
- * @returns string containing draft of row i
-*/
-string Webserver::getDraft(int i) {
-	if (draft.size() >= i+1) {
-		return draft[i];
-	}
-	return "";
 }
 
 // HTML web page
@@ -153,17 +119,17 @@ const char Webserver::index_html[] PROGMEM = R"rawliteral(
 	<form action='/input' method='post'>
 	<div id="formbox">
 		<br>
-		<input type="text" name="line1" maxlength="13" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:260px"><br />
+		<input type="text" name="line1" maxlength="16" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:260px"><br />
 		<br>
-		<input type="text" name="line2" maxlength="13" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:260px"><br />
+		<input type="text" name="line2" maxlength="16" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:260px"><br />
 		<br>
-		<input type="text" name="line3" maxlength="13" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:260px"><br />
+		<input type="text" name="line3" maxlength="16" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:260px"><br />
 		<br>
 		<input type="submit" value="flapflap" style="font-size : 35px; height:50px; width:150px">
 	</div>
 	</form><br>
 	<center>
-	Max. 13 Zeichen pro Zeile. <br>
+	Max. 16 Zeichen pro Zeile. <br>
 	Erlaubte Zeichen: 'A'-'Z', '0'-'9', '.', '/', '-', ' '
 	</center><br>
 	<center>

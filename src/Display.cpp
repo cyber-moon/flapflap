@@ -7,7 +7,7 @@ using namespace std;
 
 // Define Screen Size
 const int Display::numOfRows = 3;
-const int Display::numOfCols = 13;
+const int Display::numOfCols = 16;
 
 // TODO: Why can't I do this STATIC & CONST?
 char Display::supportedCharacters[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','V','O','P','Q','R','S','T','U','V','W','X','Y','Z','/','-','1','2','3','4','5','6','7','8','9','0','.',' '};
@@ -18,6 +18,42 @@ const int Display::ADL[] = {25, 26, 27, 4};
 const int Display::ADC[] = {21, 19, 18, 17, 16};
 
 /**
+ * Start (HIGH) or Stop (LOW) the next-selected Module
+ * @param val HIGH or LOW
+*/
+void Display::setSTART(uint8_t val) {
+	digitalWrite(START, val);
+}
+
+/**
+ * Select (HIGH) or deselect (LOW) each ADL-Pin (i.e. each row)
+ * @param row 0, 1, 2 or 3
+ * @param val HIGH or LOW
+*/
+void Display::setADL(int row, uint8_t val) {
+	digitalWrite(ADL[row], val);
+}
+
+/**
+ * Select a given column number c.
+ * Automatically un-selects all other columns.
+ * @param col Column-number ([0-n]), n_max=31
+ *            c=0: Modul on the very left (--> ADC=01111 (ADC[3]-ADC[0] are inverted))
+ *            c=31: Modul on the very right (--> ADC=10000)
+*/
+void Display::selectADC(int col) {
+	digitalWrite(ADC[4], (col/16 == 1));  // ADC[4] refers to the EN pin of the Multiplexer-chip, thus it is inverted
+	col = col%16;
+	digitalWrite(ADC[3], (col/8 == 0));
+	col = col%8;
+	digitalWrite(ADC[2], (col/4 == 0));
+	col = col%4;
+	digitalWrite(ADC[1], (col/2 == 0));
+	col = col%2;
+	digitalWrite(ADC[0], (col/1 == 0));
+}
+
+/**
  * @returns String containing binary code of currently selected module
 */
 string Display::getCurrentBinaryCode() {
@@ -26,6 +62,32 @@ string Display::getCurrentBinaryCode() {
     binaryCode.append(to_string(!digitalRead(DATA[i])));
   }
   return binaryCode;
+}
+
+/**
+ * @returns Character of currently selected module
+*/
+char Display::getCurrentChar() {
+  string binaryCode = getCurrentBinaryCode();
+  if (binaryCode == "000000") {
+    return '+'; // just return some non-existent value
+  } 
+  int intCode = (binaryCode[5]-'0')*1 + (binaryCode[4]-'0')*2 + (binaryCode[3]-'0')*4 + (binaryCode[2]-'0')*8 + (binaryCode[1]-'0')*16 + (binaryCode[0]-'0')*32;
+
+  // intCode 1-26: Characters (A-Z)
+  // intCode 45-57: Numbers (0-9) and dash (-) and point (.)
+  // intCode 32, 39: Space ( ) and slash (/)
+  // Else: return some non-existent value (+)
+  if (intCode >= 1 && intCode <= 26) {
+    return char(64 + intCode);
+  } else if (intCode >= 45 && intCode <= 57) {
+    return char(intCode);
+  } else if (intCode == 32) {
+    return ' ';
+  } else if (intCode == 39) {
+    return '/';
+  }
+  return '+'; 
 }
 
 /**
@@ -68,102 +130,39 @@ Display::Display() {
 }
 
 /**
- * Start (HIGH) or Stop (LOW) the next-selected Module
- * @param val HIGH or LOW
-*/
-void Display::setSTART(uint8_t val) {
-	digitalWrite(START, val);
-}
-
-/**
- * Select (HIGH) or deselect (LOW) each ADL-Pin (i.e. each row)
- * @param row 0, 1, 2 or 3
- * @param val HIGH or LOW
-*/
-void Display::setADL(int row, uint8_t val) {
-	digitalWrite(ADL[row], val);
-}
-
-/**
- * Select a given column number c.
- * Automatically un-selects all other columns.
- * @param col Column-number ([0-n]), n_max=31
- *            c=0: Modul on the very left (--> ADC=01111 (ADC[3]-ADC[0] are inverted))
- *            c=31: Modul on the very right (--> ADC=10000)
-*/
-void Display::selectADC(int col) {
-	digitalWrite(ADC[4], (col/16 == 1));  // ADC[4] refers to the EN pin of the Multiplexer-chip, thus it is inverted
-	col = col%16;
-	digitalWrite(ADC[3], (col/8 == 0));
-	col = col%8;
-	digitalWrite(ADC[2], (col/4 == 0));
-	col = col%4;
-	digitalWrite(ADC[1], (col/2 == 0));
-	col = col%2;
-	digitalWrite(ADC[0], (col/1 == 0));
-}
-
-/**
- * @returns Character of currently selected module
-*/
-char Display::getCurrentChar() {
-  string binaryCode = getCurrentBinaryCode();
-  if (binaryCode == "000000") {
-    return '+'; // just return some non-existent value
-  } 
-  int intCode = (binaryCode[5]-'0')*1 + (binaryCode[4]-'0')*2 + (binaryCode[3]-'0')*4 + (binaryCode[2]-'0')*8 + (binaryCode[1]-'0')*16 + (binaryCode[0]-'0')*32;
-
-  // intCode 1-26: Characters (A-Z)
-  // intCode 45-57: Numbers (0-9) and dash (-) and point (.)
-  // intCode 32, 39: Space ( ) and slash (/)
-  // Else: return some non-existent value (+)
-  if (intCode >= 1 && intCode <= 26) {
-    return char(64 + intCode);
-  } else if (intCode >= 45 && intCode <= 57) {
-    return char(intCode);
-  } else if (intCode == 32) {
-    return ' ';
-  } else if (intCode == 39) {
-    return '/';
-  }
-  return '+'; 
-}
-
-/**
  * Print the given string-vector (1 line per vector-element)
  * @param text	Vector containing num_of_rows strings with num_of_cols characters each
 */
-// void Display::printText() {
-// void Display::printText(vector<string>& AAAAAAAAAAAAAAAAAAAAAA, Webserver& webserver) {
-void Display::printText(vector<string>& AAAAAAAAAAAAAAAAAAAAAA) {
+void Display::printText(vector<string>& text) {
+  // Ensure that input vector matches the number of Rows
+  while (text.size() < numOfRows) {
+    text.push_back("");
+  }
 
-  cout << "printing..............." << endl;
-  // string text[] = {"AAAAAAAAAAAAAAAA", "BBBBBBBBBBBBBBBB", "CCCCCCCCCCCCCCCC"};
-  string text[] = {"XXXXXXXXXXXXXXXX", "YYYYYYYYYYYYYYYY", "ZZZZZZZZZZZZZZZZ"};
+  // Beautify the text (all uppercase letters, remove special characters, add spaces)
+  text[0] = reviseText(text[0]);
+  text[1] = reviseText(text[1]);
+  text[2] = reviseText(text[2]);
+  // TODO: Use iterator instead of manually revising Text.
+  // for (auto line: text) {
+  //   line = reviseText(line);
+  //   cout << "Revised Line: " << line << endl;
+  // }
 
+  // A Module x is in correct position if isCorrect[x]=10
 	int isCorrect[numOfRows * numOfCols];
   fill_n(isCorrect, numOfRows * numOfCols, 0);
-	// fill_n(isCorrect, numOfRows * numOfCols, 10);
 
-  text[0] = reviseText(AAAAAAAAAAAAAAAAAAAAAA[0]);
-  text[1] = reviseText(AAAAAAAAAAAAAAAAAAAAAA[1]);
-  text[2] = reviseText(AAAAAAAAAAAAAAAAAAAAAA[2]);
+  // If all modules are correct, sum = 10*numOfRows*numOfCols
+  int sum = 0;
 
-	// Iterate through the Matrix (Row-wise)
+	while(sum < 10*numOfCols*numOfRows) {
+    // TODO: Stop all modules after 12s and exit while-loop
 
-	while(1) {
-    // if (webserver.isDraftChange(numOfRows-1)) {
-    //   cout << "Draft changed!" << endl;
-    //   text[0] = reviseText(webserver.getDraft(0));
-    //   text[1] = reviseText(webserver.getDraft(1));
-    //   text[2] = reviseText(webserver.getDraft(2));
-    //   fill_n(isCorrect, numOfRows * numOfCols, 0);
-    // }
-
-    cout << "                        " << isCorrect[0] << isCorrect[1] << isCorrect[2] << isCorrect[3] << endl;
+    sum = 0;
+    // Iterate through the Matrix (Row-wise)
 		for (int i=0; i<numOfRows; i++) {
 			string line = text[i];
-      cout << "Line: " << line << endl;
 			for (int j=0; j<numOfCols; j++) {
 				// Correct char needs to be recognized in 10 iterations in a row to be valid
 				if (isCorrect[numOfCols*i + j] < 10) {
@@ -193,15 +192,72 @@ void Display::printText(vector<string>& AAAAAAAAAAAAAAAAAAAAAA) {
 			}
 		} 
 
-    int sum = 0;
-    for (int i=0; i<numOfCols*numOfRows; i++) {
-      sum += isCorrect[i];
+    for (int moduleScore: isCorrect) {
+      sum += moduleScore;
     }
-    if (sum >= 10*numOfCols*numOfRows) {
-      break;
-    }
-
 	}
-
-
 }
+
+
+
+
+// void Display::printText(vector<string>& draft) {
+//   // Ensure that input vector matches the number of Rows
+//   while (draft.size() < numOfRows) {
+//     draft.push_back("");
+//   }
+
+//   // Beautify the text (all uppercase letters, remove special characters, add spaces)
+//   for (auto line: draft) {
+//     line = reviseText(line);
+//     cout << "Revised Line: " << line << endl;
+//   }
+
+//   // A Module x is in correct position if isCorrect[x]=10
+// 	int isCorrect[numOfRows * numOfCols];
+//   fill_n(isCorrect, numOfRows * numOfCols, 0);
+
+//   // If all modules are correct, sum = 10*numOfRows*numOfCols
+//   int sum = 0;
+
+// 	while(sum < 10*numOfCols*numOfRows) {
+//     // TODO: Stop all modules after 12s and exit while-loop
+
+//     sum = 0;
+//     // Iterate through the Matrix (Row-wise)
+// 		for (int i=0; i<numOfRows; i++) {
+// 			string line = draft[i];
+// 			for (int j=0; j<numOfCols; j++) {
+// 				// Correct char needs to be recognized in 10 iterations in a row to be valid
+// 				if (isCorrect[numOfCols*i + j] < 10) {
+//           char myChar = line[j];
+
+//           // Try to stop the motor by de-activating START and selecting the module
+//           setSTART(LOW);
+//           usleep(5);
+//           selectADC(j);
+//           setADL(i, HIGH);
+
+//           // Stop if myChar is found (set START to LOW)
+//           char currentChar = getCurrentChar();
+//           if(currentChar == myChar) {
+//             setSTART(LOW);
+//             isCorrect[numOfCols*i + j]++;
+//           } else {
+//             setSTART(HIGH);
+//             isCorrect[numOfCols*i + j] = 0;
+//           }
+
+//           // Un-select the module, so it continues turning (if character was not found)
+//           usleep(5);
+//           setADL(i, LOW);
+//           selectADC(31);
+// 				}
+// 			}
+// 		} 
+
+//     for (int moduleScore: isCorrect) {
+//       sum += moduleScore;
+//     }
+// 	}
+// }

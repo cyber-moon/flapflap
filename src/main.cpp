@@ -8,7 +8,6 @@
 #include <string>
 #include <iostream>
 #include <unistd.h>
-// #include <Display.h>
 #include <Webserver.h>
 using namespace std;
 
@@ -22,16 +21,10 @@ using namespace std;
 void setup() {
   Serial.begin(115200);
 
-  // Display flapflap;
   Webserver webserver;
 
-
-  // vector<string> temp = {"asdf", "qwer", "yxcv"};
-
-	// flapflap.printText(temp, webserver);
-	// flapflap.printText();
-  while(1) {}
-
+  // TODO: Replace by "return 0;" or so?
+  while(1);
 }
 
 /**

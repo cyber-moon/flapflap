@@ -22,20 +22,14 @@ private:
 
   // HTML web page
   static const char index_html[] PROGMEM;
-
-  vector<string> draft;
-  vector<string> oldDraft;
   void registerHandlers();
 
+  // Flapflap-Display
   Display disp;
   // static void printing (Display& myDisp, vector<string>& text);
 
-
 public:
-	// Webserver(Display disp);
 	Webserver();
-  bool isDraftChange(int i);
-  string getDraft(int i);
 };
 
 #endif
