@@ -184,7 +184,10 @@ void Display::printText(vector<string>& text) {
   // If all modules are correct, sum == 10*numOfRows*numOfCols
   int sum = 0;
 
-	while(sum < 10*numOfCols*numOfRows) {
+  // Exit while loop after 12s latest
+  time_t exitTime = time(NULL) + 12;
+
+	while(sum < 10*numOfCols*numOfRows && time(NULL)<exitTime) {
     // TODO: Stop all modules after 12s and exit while-loop
 
     sum = 0;

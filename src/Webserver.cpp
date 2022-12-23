@@ -40,9 +40,9 @@ void Webserver::registerHandlers() {
 
 	server.on("/reset", HTTP_POST, [&] (AsyncWebServerRequest *request) {
 		draft.clear();
-		draft.push_back(" Willkommen. ");
-		draft.push_back("Los gehts auf");
-		draft.push_back(" flapflap.ch ");
+		draft.push_back("  Willkommen. ");
+		draft.push_back(" Los gehts auf");
+		draft.push_back("  flapflap.ch ");
 		request->redirect("/");
 		flapflap.updateDraft(draft);
 		flapflap.asyncPrint();
@@ -50,9 +50,9 @@ void Webserver::registerHandlers() {
 
 	server.on("/xxx", HTTP_POST, [&] (AsyncWebServerRequest *request) {
 		draft.clear();
-		draft.push_back("xxxxxxxxxxxxx");
-		draft.push_back("xxxxxxxxxxxxx");
-		draft.push_back("xxxxxxxxxxxxx");
+		draft.push_back("xxxxxxxxxxxxxxxx");
+		draft.push_back("xxxxxxxxxxxxxxxx");
+		draft.push_back("xxxxxxxxxxxxxxxx");
 		request->redirect("/");
 		flapflap.updateDraft(draft);
 		flapflap.asyncPrint();
@@ -60,9 +60,9 @@ void Webserver::registerHandlers() {
 
 	server.on("/abc", HTTP_POST, [&] (AsyncWebServerRequest *request) {
 		draft.clear();
-		draft.push_back("ABCDEFGHIJKLM");
-		draft.push_back("NOPQRSTUVWXYZ");
-		draft.push_back("/-1234567890.");
+		draft.push_back("ABCDEFGHIJKLMNOP");
+		draft.push_back("QRSTUVWXYZ/-1234");
+		draft.push_back("567890. ABCDEFGH");
 		request->redirect("/");
 		flapflap.updateDraft(draft);
 		flapflap.asyncPrint();
@@ -117,11 +117,11 @@ const char Webserver::index_html[] PROGMEM = R"rawliteral(
 	<form action='/input' method='post'>
 	<div id="formbox">
 		<br>
-		<input type="text" name="line1" maxlength="16" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:260px"><br />
+		<input type="text" name="line1" maxlength="16" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:280px"><br />
 		<br>
-		<input type="text" name="line2" maxlength="16" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:260px"><br />
+		<input type="text" name="line2" maxlength="16" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:280px"><br />
 		<br>
-		<input type="text" name="line3" maxlength="16" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:260px"><br />
+		<input type="text" name="line3" maxlength="16" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:280px"><br />
 		<br>
 		<input type="submit" value="flapflap" style="font-size : 35px; height:50px; width:150px">
 	</div>
