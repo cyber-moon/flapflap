@@ -1,7 +1,8 @@
 #include <Webserver.h>
-#include <thread>
+#include <pthread.h>
 
 using namespace std;
+
 
 /////////////////////////////////// PRIVATE ///////////////////////////////////////
 
@@ -24,56 +25,80 @@ void Webserver::registerHandlers() {
 	// Handle API Requests
 	server.on("/input", HTTP_POST, [&] (AsyncWebServerRequest *request) {
 		int params = request->params();
-		vector<string> draft;
+		draft.clear();
 		for (int i = 0; i < params; i++) {
 			AsyncWebParameter* p = request->getParam(i);
 			draft.push_back(p->value().c_str());
 		}
 
-		disp.printText(draft);
-		// TODO: Use threads
-		// printing(disp, draft);
+		request->redirect("/");
+
+
+		// TODO: Delete all old threads and stop Flapflap, before creating a new thread
+		// Set the stack size (in bytes) for the thread
+		const size_t kStackSize = 100 * 1024; // 100 KB
+
+		// Create a pthread_t variable to hold the thread handle
+		pthread_t threadHandle;
+
+		// Set up a pthread_attr_t structure to specify the stack size
+		pthread_attr_t attr;
+		pthread_attr_init(&attr);
+		pthread_attr_setstacksize(&attr, kStackSize);
+		int result = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+		if (result != 0) {
+			cout << "Creating faaailed!" << endl;
+		}
+
+		// Create the thread with the specified stack size and parameters
+		result = pthread_create(&threadHandle, &attr, &printing, &draft);
+		if (result != 0) {
+			cout << "Creating faaailed!" << endl;
+		}
+
 		// std::thread t1(printing, draft);
-		request->redirect("/");
+		// t1.detach();
 	});
 
-	server.on("/reset", HTTP_POST, [&] (AsyncWebServerRequest *request) {
-		vector<string> draft;
-		draft.push_back(" Willkommen. ");
-		draft.push_back("Los gehts auf");
-		draft.push_back(" flapflap.ch ");
-		disp.printText(draft);
-		request->redirect("/");
-	});
+	// server.on("/reset", HTTP_POST, [&] (AsyncWebServerRequest *request) {
+	// 	vector<string> draft;
+	// 	draft.push_back(" Willkommen. ");
+	// 	draft.push_back("Los gehts auf");
+	// 	draft.push_back(" flapflap.ch ");
+	// 	// disp.printText(draft);
+	// 	request->redirect("/");
+	// });
 
-	server.on("/xxx", HTTP_POST, [&] (AsyncWebServerRequest *request) {
-		vector<string> draft;
-		draft.push_back("xxxxxxxxxxxxx");
-		draft.push_back("xxxxxxxxxxxxx");
-		draft.push_back("xxxxxxxxxxxxx");
-		disp.printText(draft);
-		request->redirect("/");
-	});
+	// server.on("/xxx", HTTP_POST, [&] (AsyncWebServerRequest *request) {
+	// 	vector<string> draft;
+	// 	draft.push_back("xxxxxxxxxxxxx");
+	// 	draft.push_back("xxxxxxxxxxxxx");
+	// 	draft.push_back("xxxxxxxxxxxxx");
+	// 	// disp.printText(draft);
+	// 	request->redirect("/");
+	// });
 
-	server.on("/abc", HTTP_POST, [&] (AsyncWebServerRequest *request) {
-		vector<string> draft;
-		draft.push_back("ABCDEFGHIJKLM");
-		draft.push_back("NOPQRSTUVWXYZ");
-		draft.push_back("/-1234567890.");
-		disp.printText(draft);
-		request->redirect("/");
-	});
+	// server.on("/abc", HTTP_POST, [&] (AsyncWebServerRequest *request) {
+	// 	vector<string> draft;
+	// 	draft.push_back("ABCDEFGHIJKLM");
+	// 	draft.push_back("NOPQRSTUVWXYZ");
+	// 	draft.push_back("/-1234567890.");
+	// 	// disp.printText(draft);
+	// 	request->redirect("/");
+	// });
 
 	server.onNotFound([] (AsyncWebServerRequest *request) {
 		request->send(404, "text/plain", "Not found");
 	});
 }
 
-// TODO: Delete this function if not necessary anymore
-// void Webserver::printing (Display& myDisp, vector<string>& text) {
-// 	cout << "Trying to print with: \n" << text[0] << "\n" << text[1] << "\n" << text[2] << endl;
-// 	// myDisp.printText(text);
-// }
+void* Webserver::printing (void* args) {
+	Display disp;
+	cout << "Printing text with seperate Thread" << endl;
+	std::vector<std::string>* param = static_cast<std::vector<std::string>*>(args);
+	disp.printText(*param);
+	return nullptr;
+}
 
 
 /////////////////////////////////// PUBLIC ///////////////////////////////////////

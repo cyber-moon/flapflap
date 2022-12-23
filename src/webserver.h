@@ -25,8 +25,9 @@ private:
   void registerHandlers();
 
   // Flapflap-Display
-  Display disp;
-  // static void printing (Display& myDisp, vector<string>& text);
+	vector<string> draft;
+
+  static void* printing (void* args);
 
 public:
 	Webserver();

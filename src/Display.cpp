@@ -153,7 +153,7 @@ void Display::printText(vector<string>& text) {
 	int isCorrect[numOfRows * numOfCols];
   fill_n(isCorrect, numOfRows * numOfCols, 0);
 
-  // If all modules are correct, sum = 10*numOfRows*numOfCols
+  // If all modules are correct, sum == 10*numOfRows*numOfCols
   int sum = 0;
 
 	while(sum < 10*numOfCols*numOfRows) {
@@ -198,66 +198,3 @@ void Display::printText(vector<string>& text) {
 	}
 }
 
-
-
-
-// void Display::printText(vector<string>& draft) {
-//   // Ensure that input vector matches the number of Rows
-//   while (draft.size() < numOfRows) {
-//     draft.push_back("");
-//   }
-
-//   // Beautify the text (all uppercase letters, remove special characters, add spaces)
-//   for (auto line: draft) {
-//     line = reviseText(line);
-//     cout << "Revised Line: " << line << endl;
-//   }
-
-//   // A Module x is in correct position if isCorrect[x]=10
-// 	int isCorrect[numOfRows * numOfCols];
-//   fill_n(isCorrect, numOfRows * numOfCols, 0);
-
-//   // If all modules are correct, sum = 10*numOfRows*numOfCols
-//   int sum = 0;
-
-// 	while(sum < 10*numOfCols*numOfRows) {
-//     // TODO: Stop all modules after 12s and exit while-loop
-
-//     sum = 0;
-//     // Iterate through the Matrix (Row-wise)
-// 		for (int i=0; i<numOfRows; i++) {
-// 			string line = draft[i];
-// 			for (int j=0; j<numOfCols; j++) {
-// 				// Correct char needs to be recognized in 10 iterations in a row to be valid
-// 				if (isCorrect[numOfCols*i + j] < 10) {
-//           char myChar = line[j];
-
-//           // Try to stop the motor by de-activating START and selecting the module
-//           setSTART(LOW);
-//           usleep(5);
-//           selectADC(j);
-//           setADL(i, HIGH);
-
-//           // Stop if myChar is found (set START to LOW)
-//           char currentChar = getCurrentChar();
-//           if(currentChar == myChar) {
-//             setSTART(LOW);
-//             isCorrect[numOfCols*i + j]++;
-//           } else {
-//             setSTART(HIGH);
-//             isCorrect[numOfCols*i + j] = 0;
-//           }
-
-//           // Un-select the module, so it continues turning (if character was not found)
-//           usleep(5);
-//           setADL(i, LOW);
-//           selectADC(31);
-// 				}
-// 			}
-// 		} 
-
-//     for (int moduleScore: isCorrect) {
-//       sum += moduleScore;
-//     }
-// 	}
-// }

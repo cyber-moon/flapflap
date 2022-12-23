@@ -32,9 +32,7 @@ public:
 	static const int numOfRows;
 	static const int numOfCols;
 
-	// void printText(vector<string>& AAAAAAAAAAAAAAAAAAAAAA, Webserver& webserver);
-	// void printText();
-	void printText(vector<string>& AAAAAAAAAAAAAAAAAAAAAA);
+	void printText(vector<string>& text);
 };
 
 #endif
