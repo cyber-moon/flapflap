@@ -196,5 +196,6 @@ void Display::printText(vector<string>& text) {
       sum += moduleScore;
     }
 	}
+  // pthread_exit(NULL);
 }
 
