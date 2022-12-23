@@ -186,10 +186,9 @@ void Display::printText(vector<string>& text) {
 
   // Exit while loop after 12s latest
   time_t exitTime = time(NULL) + 12;
+  cout << time(NULL) << "     " << exitTime << endl;
 
 	while(sum < 10*numOfCols*numOfRows && time(NULL)<exitTime) {
-    // TODO: Stop all modules after 12s and exit while-loop
-
     sum = 0;
     // Iterate through the Matrix (Row-wise)
 		for (int i=0; i<numOfRows; i++) {
@@ -231,6 +230,17 @@ void Display::printText(vector<string>& text) {
       sum += moduleScore;
     }
 	}
+
+  // Ensure that all modules are stopped
+  for (int i=0; i<numOfRows; i++) {
+    for (int j=0; j<numOfCols; j++) {
+        setSTART(LOW);
+        usleep(5);
+        selectADC(j);
+        setADL(i, HIGH);
+    }
+  } 
+
   printInProgress = false;
   pthread_exit(NULL);
 }
