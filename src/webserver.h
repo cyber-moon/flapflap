@@ -5,7 +5,6 @@
 #include <string>
 #include <iostream>
 #include <unistd.h>
-#include <pthread.h>
 
 using namespace std;
 
@@ -25,15 +24,9 @@ private:
   static const char index_html[] PROGMEM;
   void registerHandlers();
 
-  // Create a pthread_t variable to hold the thread handle
-  pthread_t threadHandle;
-  // Set up a pthread_attr_t structure to specify the stack size
-  pthread_attr_t attr;
-
   // Flapflap-Display
+  Display flapflap;
 	vector<string> draft;
-  void asyncPrint();
-  static void* printing (void* args);
 
 public:
 	Webserver();

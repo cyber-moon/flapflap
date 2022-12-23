@@ -127,6 +127,47 @@ Display::Display() {
 	for (int i=0; i<=4; i++) {
 		pinMode(ADC[i], OUTPUT);
 	}
+
+	// Set up Multithreading
+	const size_t kStackSize = 100 * 1024; // 100 KB
+	pthread_attr_init(&attr);
+	pthread_attr_setstacksize(&attr, kStackSize);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
+  printInProgress = false;
+}
+
+void Display::updateDraft(vector<string> text) {
+  revisedText.clear();
+
+  // Ensure that input vector matches the number of Rows
+  while (text.size() < numOfRows) {
+    text.push_back("");
+  }
+
+  for (auto line : text) {
+    revisedText.push_back(reviseText(line));
+  }
+}
+
+void Display::asyncPrint() {
+  if (!printInProgress) {
+    printInProgress = true;
+    int create_success = pthread_create(&threadHandle, &attr, &printing, &revisedText);
+    if (create_success != 0) 	throw logic_error("Creation of new thread failed.");
+  } else {
+    doRestart = true;
+  }
+  
+}
+
+
+void* Display::printing (void* args) {
+	cout << "Printing text with seperate Thread" << endl;
+	std::vector<std::string>* text = static_cast<std::vector<std::string>*>(args);
+
+	printText(*text);
+	return nullptr;
 }
 
 /**
@@ -134,20 +175,7 @@ Display::Display() {
  * @param text	Vector containing num_of_rows strings with num_of_cols characters each
 */
 void Display::printText(vector<string>& text) {
-  // Ensure that input vector matches the number of Rows
-  while (text.size() < numOfRows) {
-    text.push_back("");
-  }
-
-  // Beautify the text (all uppercase letters, remove special characters, add spaces)
-  text[0] = reviseText(text[0]);
-  text[1] = reviseText(text[1]);
-  text[2] = reviseText(text[2]);
-  // TODO: Use iterator instead of manually revising Text.
-  // for (auto line: text) {
-  //   line = reviseText(line);
-  //   cout << "Revised Line: " << line << endl;
-  // }
+  cout << "printText: " << revisedText[0] << "   " << endl;
 
   // A Module x is in correct position if isCorrect[x]=10
 	int isCorrect[numOfRows * numOfCols];
@@ -162,7 +190,7 @@ void Display::printText(vector<string>& text) {
     sum = 0;
     // Iterate through the Matrix (Row-wise)
 		for (int i=0; i<numOfRows; i++) {
-			string line = text[i];
+			string line = revisedText[i];
 			for (int j=0; j<numOfCols; j++) {
 				// Correct char needs to be recognized in 10 iterations in a row to be valid
 				if (isCorrect[numOfCols*i + j] < 10) {
@@ -191,11 +219,16 @@ void Display::printText(vector<string>& text) {
 				}
 			}
 		} 
+    if (doRestart) {
+      fill_n(isCorrect, numOfRows * numOfCols, 0);
+      doRestart = false;
+    }
 
     for (int moduleScore: isCorrect) {
       sum += moduleScore;
     }
 	}
-  // pthread_exit(NULL);
+  printInProgress = false;
+  pthread_exit(NULL);
 }
 
