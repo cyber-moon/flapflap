@@ -1,5 +1,5 @@
-#ifndef TEXT_H
-#define TEXT_H
+#ifndef SNAKE_H
+#define SNAKE_H
 
 #include <Arduino.h>
 #include <string>
@@ -14,9 +14,10 @@ class Snake {
 private:
 	Display flapflap;
 
-	int direction = 0;	// 0: right, 1: down, 2: left, 3: up
 
 public:
+	int direction = 0;	// 0: right, 1: down, 2: left, 3: up
+
 	vector<pair<int, int>> snake = {{1, 3}, {1, 4}, {1, 5}};
 
 	Snake() {
