@@ -30,8 +30,8 @@ void Webserver::registerHandlers() {
 			draft.push_back(p->value().c_str());
 		}
 		request->redirect("/");
-		flapflap.updateDraft(draft);
-		flapflap.asyncPrint();
+		printer.updateDraft(draft);
+		printer.asyncPrint();
 	});
 
 	server.on("/reset", HTTP_POST, [&] (AsyncWebServerRequest *request) {
@@ -40,8 +40,8 @@ void Webserver::registerHandlers() {
 		draft.push_back(" Los gehts auf");
 		draft.push_back("  flapflap.ch ");
 		request->redirect("/");
-		flapflap.updateDraft(draft);
-		flapflap.asyncPrint();
+		printer.updateDraft(draft);
+		printer.asyncPrint();
 	});
 
 	server.on("/xxx", HTTP_POST, [&] (AsyncWebServerRequest *request) {
@@ -50,8 +50,8 @@ void Webserver::registerHandlers() {
 		draft.push_back("xxxxxxxxxxxxxxxx");
 		draft.push_back("xxxxxxxxxxxxxxxx");
 		request->redirect("/");
-		flapflap.updateDraft(draft);
-		flapflap.asyncPrint();
+		printer.updateDraft(draft);
+		printer.asyncPrint();
 	});
 
 	server.on("/abc", HTTP_POST, [&] (AsyncWebServerRequest *request) {
@@ -60,8 +60,8 @@ void Webserver::registerHandlers() {
 		draft.push_back("QRSTUVWXYZ/-1234");
 		draft.push_back("567890. ABCDEFGH");
 		request->redirect("/");
-		flapflap.updateDraft(draft);
-		flapflap.asyncPrint();
+		printer.updateDraft(draft);
+		printer.asyncPrint();
 	});
 
 	server.onNotFound([] (AsyncWebServerRequest *request) {

@@ -5,13 +5,12 @@
 #include <string>
 #include <iostream>
 #include <unistd.h>
-#include <pthread.h>
 
 using namespace std;
 
 
-class Display {
-private:
+struct Display {
+	Display();
 	static char supportedCharacters[];
 
 	static const int START;
@@ -23,28 +22,11 @@ private:
 	static void setADL(int row, uint8_t val);
 	static void selectADC(int col);
 	
-	static string getCurrentBinaryCode();
-	static char getCurrentChar();
 	static string reviseText(string text);
-
-	inline static bool printInProgress = false;
-	inline static bool doRestart = false;
-
-	inline static vector<string> revisedText;
-
-	pthread_t threadHandle;		// hold the thread handle
-	pthread_attr_t attr;		// necessary for specifying the stack size
-public:
-	Display();
 
 	// Screen Size
 	static const int numOfRows;
 	static const int numOfCols;
-
-	void updateDraft(vector<string> text);
-	void asyncPrint();
-	static void* printing (void* args);
-	static void printText();
 };
 
 #endif

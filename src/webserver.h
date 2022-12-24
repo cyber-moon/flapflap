@@ -5,7 +5,7 @@
 #include <string>
 #include <iostream>
 #include <unistd.h>
-#include <Display.h>
+#include <Text.h>
 
 using namespace std;
 
@@ -25,7 +25,7 @@ private:
   void registerHandlers();
 
   // Flapflap-Display
-  Display flapflap;
+  Text printer;
 public:
 	Webserver();
 };
