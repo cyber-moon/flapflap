@@ -3,8 +3,6 @@
 using namespace std;
 
 
-/////////////////////////////////// PRIVATE ///////////////////////////////////////
-
 // Define Screen Size
 const int Display::numOfRows = 3;
 const int Display::numOfCols = 16;
@@ -53,43 +51,6 @@ void Display::selectADC(int col) {
 }
 
 /**
- * @returns String containing binary code of currently selected module
-*/
-string Display::getCurrentBinaryCode() {
-  string binaryCode = "";
-  for (int i=5; i>=0; i--) {
-    binaryCode.append(to_string(!digitalRead(DATA[i])));
-  }
-  return binaryCode;
-}
-
-/**
- * @returns Character of currently selected module
-*/
-char Display::getCurrentChar() {
-  string binaryCode = getCurrentBinaryCode();
-  if (binaryCode == "000000") {
-    return '+'; // just return some non-existent value
-  } 
-  int intCode = (binaryCode[5]-'0')*1 + (binaryCode[4]-'0')*2 + (binaryCode[3]-'0')*4 + (binaryCode[2]-'0')*8 + (binaryCode[1]-'0')*16 + (binaryCode[0]-'0')*32;
-
-  // intCode 1-26: Characters (A-Z)
-  // intCode 45-57: Numbers (0-9) and dash (-) and point (.)
-  // intCode 32, 39: Space ( ) and slash (/)
-  // Else: return some non-existent value (+)
-  if (intCode >= 1 && intCode <= 26) {
-    return char(64 + intCode);
-  } else if (intCode >= 45 && intCode <= 57) {
-    return char(intCode);
-  } else if (intCode == 32) {
-    return ' ';
-  } else if (intCode == 39) {
-    return '/';
-  }
-  return '+'; 
-}
-
-/**
  * Remove unsupported Characters and, if necessary, add spaces at the end of line
  * @param text  single row of text, possibly containing unsupported characters (e.g. "fräch!")
  * @returns     single row of text, with characters replaced an missing spaces (e.g. "fr/ch/     ")
@@ -112,8 +73,6 @@ string Display::reviseText(string text) {
   return text;
 }
 
-/////////////////////////////////// PUBLIC ///////////////////////////////////////
-
 Display::Display() {
 	// Define IO-Pinmode
 	pinMode(START, OUTPUT);
@@ -126,129 +85,5 @@ Display::Display() {
 	for (int i=0; i<=4; i++) {
 		pinMode(ADC[i], OUTPUT);
 	}
-
-	// Set up Multithreading
-	const size_t kStackSize = 100 * 1024; // 100 KB
-	pthread_attr_init(&attr);
-	pthread_attr_setstacksize(&attr, kStackSize);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-
-  printInProgress = false;
-}
-
-/**
- * Update the object's revisedText-field, and revise the input text.
- * @param text  Vector containing a string for each line to be printed
-*/
-void Display::updateDraft(vector<string> text) {
-  revisedText.clear();
-
-  // Ensure that input vector matches the number of Rows
-  while (text.size() < numOfRows) {
-    text.push_back("");
-  }
-
-  for (auto line : text) {
-    revisedText.push_back(reviseText(line));
-  }
-}
-
-/**
- * Start the printing process
-*/
-void Display::asyncPrint() {
-  if (!printInProgress) {
-    printInProgress = true;
-    int create_success = pthread_create(&threadHandle, &attr, &printing, NULL);
-    if (create_success != 0) 	throw logic_error("Creation of new thread failed.");
-  } else {
-    doRestart = true;
-  }
-  
-}
-
-/**
- * Function handled to the seperate thread in asyncPrint.
- * Arguments and return values are not used.
-*/
-void* Display::printing (void* args) {
-	printText();
-	return nullptr;
-}
-
-/**
- * Print the given string-vector (1 line per vector-element)
- * @param text	Vector containing num_of_rows strings with num_of_cols characters each
-*/
-void Display::printText() {
-  // A Module x is in correct position if isCorrect[x]=10
-	int isCorrect[numOfRows * numOfCols];
-  fill_n(isCorrect, numOfRows * numOfCols, 0);
-
-  // If all modules are correct, allCorrect == 10*numOfRows*numOfCols
-  int allCorrect = 0;
-
-  // Exit while loop after 12s latest
-  time_t exitTime = time(NULL) + 12;
-  cout << time(NULL) << "     " << exitTime << endl;
-
-	while(allCorrect < 10*numOfCols*numOfRows && time(NULL)<exitTime) {
-    // Iterate through the Matrix (Row-wise)
-		for (int i=0; i<numOfRows; i++) {
-			string line = revisedText[i];
-			for (int j=0; j<numOfCols; j++) {
-				// Correct char needs to be recognized in 10 iterations in a row to be valid
-				if (isCorrect[numOfCols*i + j] < 10) {
-          char myChar = line[j];
-
-          // Try to stop the motor by de-activating START and selecting the module
-          setSTART(LOW);
-          usleep(5);
-          selectADC(j);
-          setADL(i, HIGH);
-
-          // Stop if myChar is found (set START to LOW)
-          char currentChar = getCurrentChar();
-          if(currentChar == myChar) {
-            setSTART(LOW);
-            isCorrect[numOfCols*i + j]++;
-          } else {
-            setSTART(HIGH);
-            isCorrect[numOfCols*i + j] = 0;
-          }
-
-          // Un-select the module, so it continues turning (if character was not found)
-          usleep(5);
-          setADL(i, LOW);
-          selectADC(31);
-				}
-			}
-		} 
-
-    // if a restart was triggered (from web handler), reset isCorrect to 0
-    if (doRestart) {
-      fill_n(isCorrect, numOfRows * numOfCols, 0);
-      doRestart = false;
-    }
-
-    // Indirectly count the number of correct modules
-    allCorrect = 0;
-    for (int moduleScore: isCorrect) {
-      allCorrect += moduleScore;
-    }
-	}
-
-  // Ensure that all modules are stopped
-  for (int i=0; i<numOfRows; i++) {
-    for (int j=0; j<numOfCols; j++) {
-        setSTART(LOW);
-        usleep(5);
-        selectADC(j);
-        setADL(i, HIGH);
-    }
-  } 
-
-  printInProgress = false;
-  pthread_exit(NULL);
 }
 
