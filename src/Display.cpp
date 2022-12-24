@@ -50,6 +50,14 @@ void Display::selectADC(int col) {
 	digitalWrite(ADC[0], (col/1 == 0));
 }
 
+bool Display::isSupportedChar(char x) {
+  char* supportedCharacters_end = supportedCharacters+size(supportedCharacters);
+  if (find(supportedCharacters, supportedCharacters_end, x) == supportedCharacters_end) {
+    return false;
+  }
+  return true;
+}
+
 /**
  * Remove unsupported Characters and, if necessary, add spaces at the end of line
  * @param text  single row of text, possibly containing unsupported characters (e.g. "fräch!")
@@ -71,6 +79,43 @@ string Display::reviseText(string text) {
     text = text.append(spaces);
   }
   return text;
+}
+
+/**
+ * @returns String containing binary code of currently selected module
+*/
+string Display::getCurrentBinaryCode() {
+  string binaryCode = "";
+  for (int i=5; i>=0; i--) {
+    binaryCode.append(to_string(!digitalRead(DATA[i])));
+  }
+  return binaryCode;
+}
+
+/**
+ * @returns Character of currently selected module
+*/
+char Display::getCurrentChar() {
+  string binaryCode = getCurrentBinaryCode();
+  if (binaryCode == "000000") {
+    return '+'; // just return some non-existent value
+  } 
+  int intCode = (binaryCode[5]-'0')*1 + (binaryCode[4]-'0')*2 + (binaryCode[3]-'0')*4 + (binaryCode[2]-'0')*8 + (binaryCode[1]-'0')*16 + (binaryCode[0]-'0')*32;
+
+  // intCode 1-26: Characters (A-Z)
+  // intCode 45-57: Numbers (0-9) and dash (-) and point (.)
+  // intCode 32, 39: Space ( ) and slash (/)
+  // Else: return some non-existent value (+)
+  if (intCode >= 1 && intCode <= 26) {
+    return char(64 + intCode);
+  } else if (intCode >= 45 && intCode <= 57) {
+    return char(intCode);
+  } else if (intCode == 32) {
+    return ' ';
+  } else if (intCode == 39) {
+    return '/';
+  }
+  return '+'; 
 }
 
 Display::Display() {

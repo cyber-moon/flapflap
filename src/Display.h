@@ -22,6 +22,11 @@ struct Display {
 	static void setADL(int row, uint8_t val);
 	static void selectADC(int col);
 	
+	static bool isSupportedChar(char x);
+
+	static string getCurrentBinaryCode();
+	static char getCurrentChar();
+
 	static string reviseText(string text);
 
 	// Screen Size

@@ -16,8 +16,9 @@ AsyncWebServer Webserver::server = AsyncWebServer(80);
 */
 void Webserver::registerHandlers() {
 	// Basic Homepage
-	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+	server.on("/", HTTP_GET, [&](AsyncWebServerRequest *request){
 		request->send_P(200, "text/html", index_html);
+		snake.isRunning = false;
 		cout << "printed default page" << endl;
 	});
 
@@ -69,12 +70,14 @@ void Webserver::registerHandlers() {
 	});
 
 	// Snake Homepage
-	server.on("/snake", HTTP_GET, [](AsyncWebServerRequest *request){
+	server.on("/snake", HTTP_GET, [&](AsyncWebServerRequest *request){
 		request->send_P(200, "text/html", snake_html);
-		cout << "printed snake page" << endl;
+		if (!snake.isRunning) {
+			snake.start();
+		}
 	});
 
-	server.on("/snake/right", HTTP_POST, [&] (AsyncWebServerRequest *request) {
+	server.on("/snake/left", HTTP_POST, [&] (AsyncWebServerRequest *request) {
 		request->redirect("/snake");
 		snake.direction = 0;
 	});
@@ -82,7 +85,7 @@ void Webserver::registerHandlers() {
 		request->redirect("/snake");
 		snake.direction = 1;
 	});
-	server.on("/snake/left", HTTP_POST, [&] (AsyncWebServerRequest *request) {
+	server.on("/snake/right", HTTP_POST, [&] (AsyncWebServerRequest *request) {
 		request->redirect("/snake");
 		snake.direction = 2;
 	});

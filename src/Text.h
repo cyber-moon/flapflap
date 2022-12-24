@@ -13,9 +13,6 @@ using namespace std;
 
 class Text {
 private:
-	static string getCurrentBinaryCode();
-	static char getCurrentChar();
-
 	inline static bool printInProgress = false;
 	inline static bool doRestart = false;
 
