@@ -9,7 +9,6 @@ using namespace std;
 const int Display::numOfRows = 3;
 const int Display::numOfCols = 16;
 
-// TODO: Why can't I do this STATIC & CONST?
 char Display::supportedCharacters[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','V','O','P','Q','R','S','T','U','V','W','X','Y','Z','/','-','1','2','3','4','5','6','7','8','9','0','.',' '};
 
 const int Display::START = 22;
@@ -137,6 +136,10 @@ Display::Display() {
   printInProgress = false;
 }
 
+/**
+ * Update the object's revisedText-field, and revise the input text.
+ * @param text  Vector containing a string for each line to be printed
+*/
 void Display::updateDraft(vector<string> text) {
   revisedText.clear();
 
@@ -150,6 +153,9 @@ void Display::updateDraft(vector<string> text) {
   }
 }
 
+/**
+ * Start the printing process
+*/
 void Display::asyncPrint() {
   if (!printInProgress) {
     printInProgress = true;
@@ -161,6 +167,10 @@ void Display::asyncPrint() {
   
 }
 
+/**
+ * Function handled to the seperate thread in asyncPrint.
+ * Arguments and return values are not used.
+*/
 void* Display::printing (void* args) {
 	printText();
 	return nullptr;
@@ -171,21 +181,18 @@ void* Display::printing (void* args) {
  * @param text	Vector containing num_of_rows strings with num_of_cols characters each
 */
 void Display::printText() {
-  cout << "printText: " << revisedText[0] << "   " << endl;
-
   // A Module x is in correct position if isCorrect[x]=10
 	int isCorrect[numOfRows * numOfCols];
   fill_n(isCorrect, numOfRows * numOfCols, 0);
 
-  // If all modules are correct, sum == 10*numOfRows*numOfCols
-  int sum = 0;
+  // If all modules are correct, allCorrect == 10*numOfRows*numOfCols
+  int allCorrect = 0;
 
   // Exit while loop after 12s latest
   time_t exitTime = time(NULL) + 12;
   cout << time(NULL) << "     " << exitTime << endl;
 
-	while(sum < 10*numOfCols*numOfRows && time(NULL)<exitTime) {
-    sum = 0;
+	while(allCorrect < 10*numOfCols*numOfRows && time(NULL)<exitTime) {
     // Iterate through the Matrix (Row-wise)
 		for (int i=0; i<numOfRows; i++) {
 			string line = revisedText[i];
@@ -217,13 +224,17 @@ void Display::printText() {
 				}
 			}
 		} 
+
+    // if a restart was triggered (from web handler), reset isCorrect to 0
     if (doRestart) {
       fill_n(isCorrect, numOfRows * numOfCols, 0);
       doRestart = false;
     }
 
+    // Indirectly count the number of correct modules
+    allCorrect = 0;
     for (int moduleScore: isCorrect) {
-      sum += moduleScore;
+      allCorrect += moduleScore;
     }
 	}
 

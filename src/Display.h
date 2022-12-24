@@ -27,15 +27,13 @@ private:
 	static char getCurrentChar();
 	static string reviseText(string text);
 
-	inline static bool printInProgress;
+	inline static bool printInProgress = false;
 	inline static bool doRestart = false;
 
 	inline static vector<string> revisedText;
 
-	// Create a pthread_t variable to hold the thread handle
-	pthread_t threadHandle;
-	// Set up a pthread_attr_t structure to specify the stack size
-	pthread_attr_t attr;
+	pthread_t threadHandle;		// hold the thread handle
+	pthread_attr_t attr;		// necessary for specifying the stack size
 public:
 	Display();
 
