@@ -45,6 +45,8 @@ char Text::getCurrentChar() {
 /////////////////////////////////// PUBLIC ///////////////////////////////////////
 
 Text::Text() {
+  flapflap = Display();
+
 	// Set up Multithreading
 	const size_t kStackSize = 100 * 1024; // 100 KB
 	pthread_attr_init(&attr);
