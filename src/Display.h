@@ -46,7 +46,7 @@ public:
 	void updateDraft(vector<string> text);
 	void asyncPrint();
 	static void* printing (void* args);
-	static void printText(vector<string>& text);
+	static void printText();
 };
 
 #endif

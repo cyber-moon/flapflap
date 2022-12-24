@@ -24,7 +24,7 @@ void Webserver::registerHandlers() {
 	// Handle API Requests
 	server.on("/input", HTTP_POST, [&] (AsyncWebServerRequest *request) {
 		int params = request->params();
-		draft.clear();
+		vector<string> draft;
 		for (int i = 0; i < params; i++) {
 			AsyncWebParameter* p = request->getParam(i);
 			draft.push_back(p->value().c_str());
@@ -32,14 +32,12 @@ void Webserver::registerHandlers() {
 
 		request->redirect("/");
 
-
-		// TODO: Delete all old threads and stop Flapflap, before creating a new thread
 		flapflap.updateDraft(draft);
 		flapflap.asyncPrint();
 	});
 
 	server.on("/reset", HTTP_POST, [&] (AsyncWebServerRequest *request) {
-		draft.clear();
+		vector<string> draft;
 		draft.push_back("  Willkommen. ");
 		draft.push_back(" Los gehts auf");
 		draft.push_back("  flapflap.ch ");
@@ -49,7 +47,7 @@ void Webserver::registerHandlers() {
 	});
 
 	server.on("/xxx", HTTP_POST, [&] (AsyncWebServerRequest *request) {
-		draft.clear();
+		vector<string> draft;
 		draft.push_back("xxxxxxxxxxxxxxxx");
 		draft.push_back("xxxxxxxxxxxxxxxx");
 		draft.push_back("xxxxxxxxxxxxxxxx");
@@ -59,7 +57,7 @@ void Webserver::registerHandlers() {
 	});
 
 	server.on("/abc", HTTP_POST, [&] (AsyncWebServerRequest *request) {
-		draft.clear();
+		vector<string> draft;
 		draft.push_back("ABCDEFGHIJKLMNOP");
 		draft.push_back("QRSTUVWXYZ/-1234");
 		draft.push_back("567890. ABCDEFGH");

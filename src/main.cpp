@@ -4,15 +4,8 @@
   Controlling an Omega 3021 Flipflap-Display
 *********/
 
-#include <Arduino.h>
-#include <string>
-#include <iostream>
-#include <unistd.h>
 #include <Webserver.h>
 using namespace std;
-
-
-
 
 
 /**
@@ -23,8 +16,7 @@ void setup() {
 
   Webserver webserver;
 
-  // TODO: Replace by "return 0;" or so?
-  while(1);
+  while(1); // Without this while-loop, thread creation (in Display::asyncPrint) fails
 }
 
 /**

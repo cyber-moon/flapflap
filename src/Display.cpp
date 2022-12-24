@@ -153,7 +153,7 @@ void Display::updateDraft(vector<string> text) {
 void Display::asyncPrint() {
   if (!printInProgress) {
     printInProgress = true;
-    int create_success = pthread_create(&threadHandle, &attr, &printing, &revisedText);
+    int create_success = pthread_create(&threadHandle, &attr, &printing, NULL);
     if (create_success != 0) 	throw logic_error("Creation of new thread failed.");
   } else {
     doRestart = true;
@@ -161,12 +161,8 @@ void Display::asyncPrint() {
   
 }
 
-
 void* Display::printing (void* args) {
-	cout << "Printing text with seperate Thread" << endl;
-	std::vector<std::string>* text = static_cast<std::vector<std::string>*>(args);
-
-	printText(*text);
+	printText();
 	return nullptr;
 }
 
@@ -174,7 +170,7 @@ void* Display::printing (void* args) {
  * Print the given string-vector (1 line per vector-element)
  * @param text	Vector containing num_of_rows strings with num_of_cols characters each
 */
-void Display::printText(vector<string>& text) {
+void Display::printText() {
   cout << "printText: " << revisedText[0] << "   " << endl;
 
   // A Module x is in correct position if isCorrect[x]=10

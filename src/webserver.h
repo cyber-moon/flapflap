@@ -5,13 +5,13 @@
 #include <string>
 #include <iostream>
 #include <unistd.h>
+#include <Display.h>
 
 using namespace std;
 
 #ifndef WEBSERVER_H
 #define WEBSERVER_H
 
-#include <Display.h>
 
 class Webserver {
 private:
