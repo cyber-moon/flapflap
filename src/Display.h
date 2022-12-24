@@ -32,9 +32,10 @@ private:
 
 	inline static vector<string> revisedText;
 
+public:
 	pthread_t threadHandle;		// hold the thread handle
 	pthread_attr_t attr;		// necessary for specifying the stack size
-public:
+
 	Display();
 
 	// Screen Size

@@ -23,11 +23,11 @@ private:
   // HTML web page
   static const char index_html[] PROGMEM;
   void registerHandlers();
-
+public:
   // Flapflap-Display
   Display flapflap;
-public:
-	Webserver();
+	
+  Webserver();
 };
 
 #endif
