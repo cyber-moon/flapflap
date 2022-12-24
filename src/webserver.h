@@ -6,13 +6,13 @@
 #include <iostream>
 #include <unistd.h>
 #include <Text.h>
+#include <Snake.h>
 
 using namespace std;
 
 #ifndef WEBSERVER_H
 #define WEBSERVER_H
 
-#include <Snake.h>
 
 class Webserver {
 private:
