@@ -12,6 +12,7 @@ using namespace std;
 #ifndef WEBSERVER_H
 #define WEBSERVER_H
 
+#include <Snake.h>
 
 class Webserver {
 private:
@@ -22,10 +23,12 @@ private:
 
   // HTML web page
   static const char index_html[] PROGMEM;
+  static const char snake_html[] PROGMEM;
   void registerHandlers();
 
   // Flapflap-Display
   Text printer;
+  Snake snake;
 public:
 	Webserver();
 };

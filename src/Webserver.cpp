@@ -67,6 +67,34 @@ void Webserver::registerHandlers() {
 	server.onNotFound([] (AsyncWebServerRequest *request) {
 		request->send(404, "text/plain", "Not found");
 	});
+
+	// Snake Homepage
+	server.on("/snake", HTTP_GET, [](AsyncWebServerRequest *request){
+		request->send_P(200, "text/html", snake_html);
+		cout << "printed snake page" << endl;
+	});
+
+	server.on("/snake/right", HTTP_POST, [&] (AsyncWebServerRequest *request) {
+		request->redirect("/snake");
+		snake.direction = 0;
+	});
+	server.on("/snake/down", HTTP_POST, [&] (AsyncWebServerRequest *request) {
+		request->redirect("/snake");
+		snake.direction = 1;
+	});
+	server.on("/snake/left", HTTP_POST, [&] (AsyncWebServerRequest *request) {
+		request->redirect("/snake");
+		snake.direction = 2;
+	});
+	server.on("/snake/up", HTTP_POST, [&] (AsyncWebServerRequest *request) {
+		request->redirect("/snake");
+		snake.direction = 3;
+	});
+	server.on("/snake/move", HTTP_POST, [&] (AsyncWebServerRequest *request) {
+		request->redirect("/snake");
+		snake.move();
+	});
+
 }
 
 
@@ -135,6 +163,48 @@ const char Webserver::index_html[] PROGMEM = R"rawliteral(
 	</form>
 	<form class="colform" action="/abc" method='post'>
 		<input type="submit" value="ABC" style="font-size : 35px; height:50px; width:100px">
+	</form>
+	</center><br>
+</body>
+</html>
+)rawliteral";
+
+// Snake web page
+const char Webserver::snake_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>flapflap</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style type="text/css">
+		#formbox {
+			margin:auto 0;
+			text-align: center;
+		}
+		.colform { 
+		float:left; 
+		width:33%; 
+		}
+	</style>
+</head>
+<body>
+	<center>
+	<form class="colform" action="/snake/right" method='post'>
+		<input type="submit" value="right" style="font-size : 35px; height:50px; width:70px">
+	</form>
+	<form class="colform" action="/snake/down" method='post'>
+		<input type="submit" value="down" style="font-size : 35px; height:50px; width:70px">
+	</form>
+	<form class="colform" action="/snake/left" method='post'>
+		<input type="submit" value="left" style="font-size : 35px; height:50px; width:70px">
+	</form>
+	<form class="colform" action="/snake/up" method='post'>
+		<input type="submit" value="up" style="font-size : 35px; height:50px; width:70px">
+	</form>
+	</center><br>
+	<center>
+	<form class="colform" action="/snake/move" method='post'>
+		<input type="submit" value="move" style="font-size : 35px; height:50px; width:70px">
 	</form>
 	</center><br>
 </body>
