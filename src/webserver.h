@@ -26,8 +26,6 @@ private:
 
   // Flapflap-Display
   Display flapflap;
-	vector<string> draft;
-
 public:
 	Webserver();
 };

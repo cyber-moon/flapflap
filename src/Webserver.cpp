@@ -29,9 +29,7 @@ void Webserver::registerHandlers() {
 			AsyncWebParameter* p = request->getParam(i);
 			draft.push_back(p->value().c_str());
 		}
-
 		request->redirect("/");
-
 		flapflap.updateDraft(draft);
 		flapflap.asyncPrint();
 	});
@@ -142,7 +140,4 @@ const char Webserver::index_html[] PROGMEM = R"rawliteral(
 </body>
 </html>
 )rawliteral";
-
-
-
 
