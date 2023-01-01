@@ -113,17 +113,17 @@ const char Webserver::index_html[] PROGMEM = R"rawliteral(
 	<form action='/input' method='post'>
 	<div id="formbox">
 		<br>
-		<input type="text" name="line1" maxlength="16" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:280px"><br />
+		<input type="text" name="line1" maxlength="18" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:320px"><br />
 		<br>
-		<input type="text" name="line2" maxlength="16" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:280px"><br />
+		<input type="text" name="line2" maxlength="18" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:320px"><br />
 		<br>
-		<input type="text" name="line3" maxlength="16" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:280px"><br />
+		<input type="text" name="line3" maxlength="18" style="font-family: 'Courier New'; font-size : 28px; height:40px; width:320px"><br />
 		<br>
 		<input type="submit" value="flapflap" style="font-size : 35px; height:50px; width:150px">
 	</div>
 	</form><br>
 	<center>
-	Max. 16 Zeichen pro Zeile. <br>
+	Max. 18 Zeichen pro Zeile. <br>
 	Erlaubte Zeichen: 'A'-'Z', '0'-'9', '.', '/', '-', ' '
 	</center><br>
 	<center>
