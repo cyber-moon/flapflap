@@ -11,6 +11,19 @@ const char* Webserver::password = "Zipfel-Muetze";
 
 AsyncWebServer Webserver::server = AsyncWebServer(80);
 
+// Knowledge Generator
+vector<vector<string>> Webserver::knowledge = {
+	{" Auch ein blindes ", " Huhn trinkt mal  ", "    ein korn.     "},
+	{"Apfelstrudel sind ", "   nichts fuer    ", "  Nichtschwimmer  "},
+	{"Lieber Rum trinken", "       als        ", "    rumsitzen     "},
+	{" Salzflecken be-  ", "kommt man mit Rot-", " wein wieder raus "},
+	{"Was ist klein und ", "wird angespuehlt/ ", " Eine Mikrowelle. "},
+	{" Bier hinterlaesst", "      keine       ", "  Rotweinflecken. "}
+};
+random_device Webserver::rd;
+mt19937 Webserver::gen = mt19937(Webserver::rd());
+uniform_int_distribution<int> Webserver::dist = uniform_int_distribution<int>(0, Webserver::knowledge.size() - 1);
+
 /**
  * Register Handlers for API Requests
 */
@@ -34,11 +47,8 @@ void Webserver::registerHandlers() {
 		printer.asyncPrint();
 	});
 
-	server.on("/reset", HTTP_POST, [&] (AsyncWebServerRequest *request) {
-		vector<string> draft;
-		draft.push_back("  Willkommen. ");
-		draft.push_back(" Los gehts auf");
-		draft.push_back("  flapflap.ch ");
+	server.on("/knowledge", HTTP_POST, [&] (AsyncWebServerRequest *request) {
+		vector<string> draft = knowledge[dist(gen)];
 		request->redirect("/");
 		printer.updateDraft(draft);
 		printer.asyncPrint();
@@ -46,9 +56,9 @@ void Webserver::registerHandlers() {
 
 	server.on("/xxx", HTTP_POST, [&] (AsyncWebServerRequest *request) {
 		vector<string> draft;
-		draft.push_back("xxxxxxxxxxxxxxxx");
-		draft.push_back("xxxxxxxxxxxxxxxx");
-		draft.push_back("xxxxxxxxxxxxxxxx");
+		draft.push_back("xxxxxxxxxxxxxxxxxx");
+		draft.push_back("xxxxxxxxxxxxxxxxxx");
+		draft.push_back("xxxxxxxxxxxxxxxxxx");
 		request->redirect("/");
 		printer.updateDraft(draft);
 		printer.asyncPrint();
@@ -56,9 +66,9 @@ void Webserver::registerHandlers() {
 
 	server.on("/abc", HTTP_POST, [&] (AsyncWebServerRequest *request) {
 		vector<string> draft;
-		draft.push_back("ABCDEFGHIJKLMNOP");
-		draft.push_back("QRSTUVWXYZ/-1234");
-		draft.push_back("567890. ABCDEFGH");
+		draft.push_back("ABCDEFGHIJKLMNOPQR");
+		draft.push_back("QRPONMLKJIHGFEDCBA");
+		draft.push_back("STUVWXYZ/-12345678");
 		request->redirect("/");
 		printer.updateDraft(draft);
 		printer.asyncPrint();
@@ -127,8 +137,8 @@ const char Webserver::index_html[] PROGMEM = R"rawliteral(
 	Erlaubte Zeichen: 'A'-'Z', '0'-'9', '.', '/', '-', ' '
 	</center><br>
 	<center>
-	<form class="colform" action="/reset" method='post'>
-		<input type="submit" value="reset" style="font-size : 35px; height:50px; width:100px">
+	<form class="colform" action="/knowledge" method='post'>
+		<input type="submit" value="Why?" style="font-size : 35px; height:50px; width:100px">
 	</form>
 	<form class="colform" action="/xxx" method='post'>
 		<input type="submit" value="XXX" style="font-size : 35px; height:50px; width:100px">

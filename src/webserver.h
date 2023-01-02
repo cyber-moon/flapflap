@@ -6,6 +6,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <Text.h>
+#include <random>
 
 using namespace std;
 
@@ -26,6 +27,13 @@ private:
 
   // Flapflap-Display
   Text printer;
+
+  // Knowledge generator
+  static vector<vector<string>> knowledge;
+  static random_device rd;
+  static mt19937 gen; 
+  static uniform_int_distribution<int> dist;
+
 public:
 	Webserver();
 };
